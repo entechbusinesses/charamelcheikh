@@ -14,6 +14,8 @@ import {
   LockIcon,
   Loader2,
   ArrowUpDownIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
 } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { useEffect, useRef, useState } from "react";
@@ -100,6 +102,8 @@ export default function Pos() {
   const [cart, setCart] = useState<Item[]>([]);
   const [totalArticles, setTotalArticles] = useState<Item | null>(null);
   const [showAmount, setShowAmount] = useState<boolean>(false);
+  // phone only: the cart is a bottom sheet
+  const [showCart, setShowCart] = useState<boolean>(false);
   const [loading, setLoading] = useState({
     categories: false,
     services: false,
@@ -434,10 +438,94 @@ export default function Pos() {
           : []
         : products;
 
+  // Phone: same groups as the categories side, as a row of chips
+  const servicesGroup = {
+    key: "services",
+    name: "Services",
+    isActive: isServiceSelected,
+    onClick: selectServices,
+  };
+  const packsGroups =
+    packs.length > 0
+      ? [
+          {
+            key: "packs",
+            name: "Packs",
+            isActive: isPackSelected,
+            onClick: selectPacks,
+          },
+        ]
+      : [];
+  const mobileGroups = [
+    ...(packsFirst
+      ? [...packsGroups, servicesGroup]
+      : [servicesGroup, ...packsGroups]),
+    ...(isBeldi
+      ? [
+          {
+            key: "articles",
+            name: "Articles",
+            isActive: !isServiceSelected && !isPackSelected,
+            onClick: () => {
+              setSelectedCategory(null);
+              setIsPackSelected(false);
+              setIsServiceSelected(false);
+            },
+          },
+        ]
+      : categories.map((category) => ({
+          key: `category-${category.id}`,
+          name: category.name,
+          isActive:
+            !isServiceSelected &&
+            !isPackSelected &&
+            selectedCategory === category.id,
+          onClick: () => {
+            setSelectedCategory(category.id);
+            setIsPackSelected(false);
+            setIsServiceSelected(false);
+          },
+        }))),
+  ];
+
   return (
-    <main className="flex rounded-lg fixed top-0 pt-24 h-[95%] left-0 px-5 w-screen gap-4">
+    <main className="flex flex-col md:flex-row rounded-lg fixed top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-auto pt-3 md:pt-24 md:h-[95%] left-0 px-3 md:px-5 w-screen gap-3 md:gap-4">
+      {/* Categories: chips on phone */}
+      <nav className="md:hidden flex shrink-0 items-center gap-2 overflow-x-auto -mx-3 px-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {mobileGroups.map((group) => (
+          <button
+            key={group.key}
+            onClick={group.onClick}
+            className={cn(
+              "shrink-0 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+              group.isActive
+                ? "border-main bg-main text-white shadow-sm"
+                : "bg-white text-gray-700 active:bg-gray-100",
+            )}
+          >
+            {group.name}
+          </button>
+        ))}
+        {loading.categories && (
+          <Loader2 className="size-5 shrink-0 animate-spin text-main" />
+        )}
+        {packs.length > 0 && (
+          <button
+            onClick={togglePacksFirst}
+            title={
+              packsFirst
+                ? "Mettre les services en haut"
+                : "Mettre les packs en haut"
+            }
+            className="ml-auto shrink-0 rounded-full border bg-white p-2 text-gray-600"
+          >
+            <ArrowUpDownIcon className="size-4" />
+          </button>
+        )}
+      </nav>
+
       {/* Categories Side */}
-      <div className="border-r rounded-l-lg border min-w-[12vw] h-full overflow-hidden flex flex-col bg-white shadow-sm">
+      <div className="hidden md:flex border-r rounded-l-lg border min-w-[12vw] h-full overflow-hidden flex-col bg-white shadow-sm">
         <div className="px-4 py-4 bg-gray-50">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-2xl font-semibold">
@@ -524,9 +612,9 @@ export default function Pos() {
       </div>
 
       {/* Products Side */}
-      <div className="border-r col-span-3 border h-full flex-grow overflow-hidden flex flex-col bg-white shadow-sm">
-        <div className="px-4 py-4 bg-gray-50">
-          <h1 className="text-2xl font-semibold">
+      <div className="border-r col-span-3 border rounded-lg md:rounded-none min-h-0 md:h-full flex-1 md:flex-grow overflow-hidden flex flex-col bg-white shadow-sm">
+        <div className="px-3 py-2 md:px-4 md:py-4 bg-gray-50 max-md:border-b">
+          <h1 className="text-base md:text-2xl font-semibold">
             {isServiceSelected
               ? "Services"
               : isPackSelected
@@ -534,7 +622,7 @@ export default function Pos() {
                 : "Produits"}{" "}
             ({currentItems.length}) :
           </h1>
-          <hr className="border my-3" />
+          <hr className="hidden md:block border my-3" />
         </div>
 
         {loading.products || loading.services ? (
@@ -543,7 +631,7 @@ export default function Pos() {
             label={`Chargement des ${loading.products ? "produits" : "services"}…`}
           />
         ) : currentItems.length === 0 ? (
-          <div className="flex flex-col gap-3 items-center justify-center my-32 text-xl text-center font-medium">
+          <div className="flex flex-col gap-3 items-center justify-center my-16 md:my-32 text-xl text-center font-medium">
             <PackageXIcon className="size-16 text-main" />
             <p>
               Pas de{" "}
@@ -557,7 +645,7 @@ export default function Pos() {
           </div>
         ) : (
           <div className="overflow-y-auto">
-            <section className="grid grid-cols-4 gap-4 p-4">
+            <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-3 md:gap-4 md:p-4">
               {currentItems.map((item) => (
                 <ProductCard
                   handleStock={handleStock && item.type === "product"}
@@ -576,32 +664,84 @@ export default function Pos() {
         )}
       </div>
 
-      {/* Cart Side */}
-      <div className="col-span-2 rounded-r-lg border min-w-[25vw] h-full overflow-hidden flex flex-col bg-white shadow-sm">
-        <div className="px-4 py-4 bg-gray-50">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-semibold">Panier ({cart.length}) :</h1>
-            {cart.length > 0 && (
-              <button
-                onClick={clearCart}
-                className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1"
-              >
-                <Trash2Icon size={16} />
-                Vider
-              </button>
+      {/* Phone: cart summary bar, opens the cart sheet */}
+      <button
+        onClick={() => setShowCart(true)}
+        className={cn(
+          "md:hidden shrink-0 mb-2 flex items-center justify-between gap-3 rounded-xl px-4 py-3 shadow-lg transition-colors",
+          cart.length > 0
+            ? "bg-main text-white"
+            : "border bg-white text-gray-500",
+        )}
+      >
+        <span className="flex items-center gap-2 font-medium">
+          <span className="relative">
+            <ShoppingBasketIcon className="size-6" />
+            {totalQ > 0 && (
+              <span className="absolute -right-2 -top-2 flex size-5 items-center justify-center rounded-full bg-white text-[11px] font-bold text-main">
+                {totalQ}
+              </span>
             )}
+          </span>
+          {cart.length > 0 ? "Voir le panier" : "Panier vide"}
+        </span>
+        <span className="flex items-center gap-1 text-lg font-bold">
+          {totalPrice.toFixed(2)} DH
+          <ChevronUpIcon className="size-5" />
+        </span>
+      </button>
+
+      {showCart && (
+        <div
+          onClick={() => setShowCart(false)}
+          className="md:hidden fixed inset-0 z-[60] bg-black/40"
+        />
+      )}
+
+      {/* Cart Side (bottom sheet on phone) */}
+      <div
+        className={cn(
+          "col-span-2 rounded-r-lg border min-w-[25vw] h-full overflow-hidden flex flex-col bg-white shadow-sm",
+          "max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-[60] max-md:h-[85dvh] max-md:min-w-0 max-md:rounded-t-2xl max-md:rounded-b-none max-md:pb-[env(safe-area-inset-bottom)] max-md:shadow-2xl max-md:transition-transform max-md:duration-300",
+          showCart ? "max-md:translate-y-0" : "max-md:translate-y-full",
+        )}
+      >
+        <div className="px-4 pt-2 pb-3 md:py-4 bg-gray-50 max-md:border-b">
+          <div className="md:hidden mx-auto mb-2 h-1.5 w-10 rounded-full bg-gray-300" />
+          <div className="flex justify-between items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-semibold">
+              Panier ({cart.length}) :
+            </h1>
+            <div className="flex items-center gap-2">
+              {cart.length > 0 && (
+                <button
+                  onClick={clearCart}
+                  className="text-red-500 hover:text-red-700 text-sm flex items-center gap-1 max-md:rounded-md max-md:bg-red-50 max-md:px-3 max-md:py-2"
+                >
+                  <Trash2Icon size={16} />
+                  Vider
+                </button>
+              )}
+              <button
+                onClick={() => setShowCart(false)}
+                title="Fermer le panier"
+                className="md:hidden rounded-md border bg-white p-2 text-gray-600"
+              >
+                <ChevronDownIcon className="size-5" />
+              </button>
+            </div>
           </div>
-          <hr className="border my-3" />
+          <hr className="hidden md:block border my-3" />
         </div>
 
         {cart.length === 0 ? (
-          <div className="flex flex-col gap-3 items-center justify-center my-32 text-xl text-center font-medium">
+          <div className="flex flex-col gap-3 items-center justify-center my-16 md:my-32 text-xl text-center font-medium">
             <ShoppingBasketIcon className="size-16 text-main" />
             <p>Panier vide!</p>
           </div>
         ) : (
           <div className="flex flex-col h-full overflow-auto">
-            <div className="overflow-y-auto flex-1 p-4">
+            <div className="overflow-y-auto flex-1 p-2 md:p-4">
               {cart.map((item) => (
                 <CartItem
                   key={`${item.type}-${item.id}`}
@@ -636,7 +776,10 @@ export default function Pos() {
               </div>
               <button
                 className="w-full flex items-center justify-center gap-2 bg-main hover:bg-main-dark text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                onClick={() => setShowPayment(true)}
+                onClick={() => {
+                  setShowCart(false);
+                  setShowPayment(true);
+                }}
                 disabled={isLoadingOrder || !shift.shift}
               >
                 {isLoadingOrder && <Loader2 className="size-5 animate-spin" />}
@@ -689,8 +832,8 @@ function NoShiftOverlay({
   onStart: () => void;
 }) {
   return (
-    <div className="absolute inset-0 top-20 z-40 flex items-center justify-center bg-white/70 backdrop-blur-sm">
-      <div className="flex max-w-md flex-col items-center gap-4 rounded-xl border bg-white p-8 text-center shadow-xl">
+    <div className="absolute inset-0 md:top-20 z-40 flex items-center justify-center bg-white/70 px-4 backdrop-blur-sm">
+      <div className="flex max-w-md flex-col items-center gap-4 rounded-xl border bg-white p-6 md:p-8 text-center shadow-xl">
         <div className="flex size-16 items-center justify-center rounded-full bg-main/10">
           <LockIcon className="size-8 text-main" />
         </div>
@@ -772,9 +915,9 @@ function ProductCard({
   return (
     <section
       onClick={(e) => handleClick(e)}
-      className="w-full rounded-lg cursor-pointer relative border hover:shadow-md transition-shadow"
+      className="w-full rounded-lg cursor-pointer relative border hover:shadow-md transition-all active:scale-[0.97] select-none"
     >
-      <div className="bg-gray-100 h-32 relative rounded-t-lg flex items-center justify-center">
+      <div className="bg-gray-100 h-28 md:h-32 relative rounded-t-lg flex items-center justify-center">
         {item.type === "pack" ? (
           <div className="flex h-full w-full flex-col items-center justify-center gap-1 px-2 text-center text-sm text-gray-600">
             <BoxesIcon className="size-8 text-main" />
@@ -803,7 +946,7 @@ function ProductCard({
             style={{
               backgroundColor: stock === 0 ? "red" : "green",
             }}
-            className="absolute top-2 left-2 rounded-md text-white font-medium px-2"
+            className="absolute top-2 left-2 rounded-md text-white text-xs md:text-base font-medium px-2"
           >
             Stock : {stock || 0}
           </p>
@@ -811,7 +954,7 @@ function ProductCard({
       </div>
       <div className="p-2 flex justify-between bg-white rounded-b-lg">
         <p className="font-medium truncate">{item.name}</p>
-        <span className="font-bold bg-main text-white absolute bottom-10 px-2 rounded-tl-lg py-0.5 right-0">
+        <span className="font-bold bg-main text-white absolute bottom-10 px-2 rounded-tl-lg py-0.5 right-0 text-sm md:text-base">
           {openPrice ? "Montant libre" : `${item.price} DH`}
         </span>
       </div>
@@ -844,13 +987,13 @@ function CartItem({
     <div className="p-3 border-b last:border-b-0">
       <div className="flex items-center justify-between">
         <div className="flex-1 min-w-0">
-          <h3 className="font-medium truncate text-xl">
+          <h3 className="font-medium truncate text-base md:text-xl">
             {item.type === "pack" && (
               <BoxesIcon className="inline size-5 mr-1.5 -mt-1 text-main" />
             )}
             {item.name}
           </h3>
-          <p className="text-gray-500">
+          <p className="text-gray-500 text-sm md:text-base">
             {item.price.toFixed(2)} DH{" "}
             {item.type !== "product" &&
               item.frais > 0 &&
@@ -865,7 +1008,7 @@ function CartItem({
         <p>{(item.price * (item.quantity || 1)).toFixed(2)} DH</p>
       </div> */}
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1 md:gap-2">
           <div className="flex items-center border rounded-md">
             <button
               onClick={(e) => {
@@ -893,9 +1036,9 @@ function CartItem({
               e.stopPropagation();
               onRemove();
             }}
-            className="text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100  ml-2"
+            className="text-red-500 hover:text-red-700 p-2 rounded-md bg-red-100 ml-1 md:ml-2"
           >
-            <Trash2Icon className="size-6" />
+            <Trash2Icon className="size-5 md:size-6" />
           </button>
         </div>
       </div>
