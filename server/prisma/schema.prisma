@@ -1,0 +1,330 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int             @id @default(autoincrement())
+  name        String
+  password    String          @unique
+  role        Role            @default(CAISSIER)
+  createdAt   DateTime        @default(now())
+  local_id    Int?
+  banned      Boolean         @default(false)
+  local       Locals?         @relation(fields: [local_id], references: [id])
+  sales       Sales[]
+  receptions  ReceptionList[]
+  totals      TotalDay[]
+  shifts      Shift[]
+  pushTokens  PushToken[]
+  stockShifts StockShift[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  sid       String   @unique
+  data      String   @db.VarChar(2490)
+  expiresAt DateTime
+}
+
+model Services {
+  id        Int             @id @default(autoincrement())
+  name      String
+  price     Int
+  hidden    Boolean         @default(false)
+  image_url String?         @unique
+  local_id  Int
+  frais     Int             @default(0)
+  local     Locals?         @relation(fields: [local_id], references: [id])
+  sales     SalesServices[]
+  packs     PackServices[]
+
+  @@map("services")
+}
+
+model Packs {
+  id        Int            @id @default(autoincrement())
+  name      String
+  price     Int
+  hidden    Boolean        @default(false)
+  services  PackServices[]
+  products  PackProducts[]
+  createdAt DateTime       @default(now())
+
+  @@map("packs")
+}
+
+// all services of a pack belong to the same local
+model PackServices {
+  id         Int      @id @default(autoincrement())
+  pack_id    Int
+  pack       Packs    @relation(fields: [pack_id], references: [id], onDelete: Cascade)
+  service_id Int
+  service    Services @relation(fields: [service_id], references: [id], onDelete: Cascade)
+
+  @@unique([pack_id, service_id])
+  @@map("pack_services")
+}
+
+model PackProducts {
+  id         Int      @id @default(autoincrement())
+  pack_id    Int
+  pack       Packs    @relation(fields: [pack_id], references: [id], onDelete: Cascade)
+  product_id Int
+  product    Products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  quantity   Int      @default(1)
+
+  @@unique([pack_id, product_id])
+  @@map("pack_products")
+}
+
+model Locals {
+  id            Int             @id @default(autoincrement())
+  name          String
+  type          PDVTypes        @default(BELDI)
+  users         User[]
+  logo_url      String?         @unique
+  services      Services[]
+  sales         Sales[]
+  fromReception ReceptionList[] @relation(name: "from")
+  toReception   ReceptionList[] @relation(name: "to")
+  stock         Stock[]
+  totals        TotalDay[]
+  history       StockHistory[]
+  shifts        Shift[]
+  stockShifts   StockShift[]
+
+  @@map("locals")
+}
+
+model Categories {
+  id        Int        @id @default(autoincrement())
+  name      String
+  hide      Boolean    @default(false)
+  image_url String?    @unique
+  products  Products[]
+
+  @@unique([name])
+  @@map("categories")
+}
+
+model Products {
+  id            Int                 @id @default(autoincrement())
+  name          String
+  price         Int
+  hidden        Boolean             @default(false)
+  category_id   Int
+  category      Categories          @relation(fields: [category_id], references: [id])
+  image_url     String?             @unique
+  sales         SalesProducts[]
+  reception     ReceptionProducts[]
+  stock         Stock[]
+  stock_history StockHistory[]
+  packs         PackProducts[]
+
+  @@map("products")
+}
+
+model StockHistory {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  product    Products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  uprodown   UpOrDown
+  date       DateTime @default(now())
+  quantity   Int
+  cause      String
+  local_id   Int
+  local      Locals   @relation(fields: [local_id], references: [id], onDelete: Cascade)
+}
+
+enum UpOrDown {
+  UP
+  DOWN
+}
+
+model Stock {
+  id         Int      @id @default(autoincrement())
+  product_id Int
+  product    Products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  local_id   Int
+  local      Locals   @relation(fields: [local_id], references: [id])
+  quantity   Int      @default(0)
+  updated_at DateTime @updatedAt
+
+  @@unique([product_id, local_id])
+}
+
+model Sales {
+  id             Int             @id @default(autoincrement())
+  user_id        Int
+  user           User            @relation(fields: [user_id], references: [id])
+  total          Int             @default(1)
+  date           DateTime
+  local_id       Int
+  local          Locals          @relation(fields: [local_id], references: [id])
+  products       SalesProducts[]
+  services       SalesServices[]
+  payment_method PaymentMethod   @default(CASH)
+  paid_cash      Float           @default(0)
+  paid_tpe       Float           @default(0)
+  shift_id       Int?
+  shift          Shift?          @relation(fields: [shift_id], references: [id])
+
+  @@map("sales")
+}
+
+// A cashier's work session. Sales can only be made during an open shift.
+model Shift {
+  id              Int       @id @default(autoincrement())
+  user_id         Int
+  user            User      @relation(fields: [user_id], references: [id])
+  local_id        Int
+  local           Locals    @relation(fields: [local_id], references: [id])
+  // equals local_id while the shift is open, null once closed:
+  // the unique index allows only one open shift per local
+  active_local_id Int?      @unique
+  fond_caisse     Float     @default(0)
+  opened_at       DateTime  @default(now())
+  closed_at       DateTime?
+  // totals saved when the shift is closed
+  sales_count     Int       @default(0)
+  total_sales     Float     @default(0)
+  total_cash      Float     @default(0)
+  total_tpe       Float     @default(0)
+  sales           Sales[]
+
+  @@map("shifts")
+}
+
+// Stock count period of a BELDI local (sales there are entered by value only).
+// At closing: (stock initial + bons reçus - bons sortis) - stock final
+// should equal the value of the products sold during the period.
+model StockShift {
+  id              Int       @id @default(autoincrement())
+  local_id        Int
+  local           Locals    @relation(fields: [local_id], references: [id])
+  user_id         Int
+  user            User      @relation(fields: [user_id], references: [id])
+  // equals local_id while the shift is open, null once closed:
+  // the unique index allows only one open stock shift per local
+  active_local_id Int?      @unique
+  started_at      DateTime
+  initial_value   Float     @default(0)
+  ended_at        DateTime?
+  // values saved when the shift is closed
+  final_value     Float     @default(0)
+  receptions_in   Float     @default(0)
+  receptions_out  Float     @default(0)
+  sales_products  Float     @default(0)
+  note            String?   @db.VarChar(500)
+
+  @@map("stock_shifts")
+}
+
+enum PaymentMethod {
+  CASH
+  TPE
+  MIXTE
+}
+
+model SalesProducts {
+  id         Int      @id @default(autoincrement())
+  sale_id    Int
+  sale       Sales    @relation(fields: [sale_id], references: [id], onDelete: Cascade)
+  product_id Int
+  price      Int      @default(1)
+  product    Products @relation(fields: [product_id], references: [id])
+  quantity   Int      @default(1)
+  // set when the line was sold as part of a pack (price is then 0)
+  pack_name  String?
+
+  @@map("sales_products")
+}
+
+model SalesServices {
+  id         Int      @id @default(autoincrement())
+  sale_id    Int
+  price      Int      @default(1)
+  sale       Sales    @relation(fields: [sale_id], references: [id], onDelete: Cascade)
+  service_id Int
+  service    Services @relation(fields: [service_id], references: [id])
+  quantity   Int      @default(1)
+  frais      Int      @default(0)
+  // set when the line was sold as a pack (price is the pack price)
+  pack_name  String?
+
+  @@map("sales_services")
+}
+
+model ReceptionList {
+  id          Int                 @id @default(autoincrement())
+  date        DateTime
+  description String?
+  user_id     Int
+  total       Int                 @default(0)
+  user        User                @relation(fields: [user_id], references: [id])
+  from_id     Int?
+  to_id       Int
+  from        Locals?             @relation(fields: [from_id], references: [id], name: "from")
+  to          Locals              @relation(fields: [to_id], references: [id], name: "to")
+  isBough     Boolean
+  products    ReceptionProducts[]
+
+  @@map("reception_list")
+}
+
+model ReceptionProducts {
+  id           Int           @id @default(autoincrement())
+  product_id   Int
+  product      Products      @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  reception_id Int
+  reception    ReceptionList @relation(fields: [reception_id], references: [id], onDelete: Cascade)
+  price        Int
+  quantity     Int           @default(1)
+
+  @@map("reception_products")
+}
+
+model TotalDay {
+  id             Int      @id @default(autoincrement())
+  total_services Int      @default(0)
+  total_products Int      @default(0)
+  total          Int      @default(0)
+  user           User     @relation(fields: [user_id], references: [id])
+  user_id        Int
+  local_id       Int
+  local          Locals   @relation(fields: [local_id], references: [id])
+  date           DateTime
+
+  @@unique([local_id, date])
+  @@map("totalday")
+}
+
+enum Role {
+  ADMIN
+  CAISSIER
+}
+
+enum PDVTypes {
+  BELDI
+  TURKI
+  DEPOT
+}
+
+// Firebase Cloud Messaging device tokens (one per browser / installed PWA)
+model PushToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique @db.VarChar(512)
+  user_id   Int?
+  user      User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("push_tokens")
+}

@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+
+# Builds
+dist/
+dist-ssr/
+build/
+server/client/
+*.tsbuildinfo
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+server/firebase-service-account.json
+
+# Database dumps (contain customer and sales data)
+backups/
+*.sql
+*.dump
+
+# Files uploaded through the app (images of products, services, locals…)
+server/uploads/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.local
+
+# Claude Code: personal settings stay local, shared launch config is kept
+.claude/settings.local.json
+
+# Deploy bundles (contain .env secrets)
+*.zip

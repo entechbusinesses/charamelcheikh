@@ -1,0 +1,755 @@
+{
+  "login": {
+    "title": "Connectez-vous à votre compte",
+    "subtitle": "Entrez vos identifiants pour accéder à votre espace",
+    "email": "Adresse e-mail",
+    "emailPlaceholder": "vous@exemple.com",
+    "emailRequired": "L'adresse e-mail est requise",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Votre mot de passe",
+    "passwordRequired": "Le mot de passe est requis",
+    "rememberMe": "Se souvenir de moi",
+    "forgotPassword": "Mot de passe oublié ?",
+    "signIn": "Se connecter",
+    "signingIn": "Connexion en cours...",
+    "invalidCredentials": "Identifiants invalides. Veuillez réessayer.",
+    "welcomeBack": "Bienvenue à l'espace d'équipe DERMAZIN.",
+    "welcomeMessage": "Connectez-vous pour accéder à votre tableau de bord, gérer vos paramètres et consulter votre profil.",
+    "secureAuth": "Authentification Sécurisée",
+    "securityMessage": "Votre sécurité est notre priorité. Nous utilisons un chiffrement standard pour protéger vos données.",
+    "companyName": "Votre Entreprise. Tous droits réservés.",
+    "orContinueWith": "ou continuer avec",
+    "google": "Google",
+    "github": "GitHub",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "signUp": "S'inscrire",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe"
+  },
+  "home": {
+    "hero": {
+      "title": "Dermazin",
+      "subtitle": "Solutions de soins de la peau avancées soutenues par la science. Découvrez le pouvoir des ingrédients naturels combinés à une technologie de pointe.",
+      "shopNow": "Acheter Maintenant",
+      "learnMore": "En Savoir Plus",
+      "imageAlt": "Produit vedette Dermazin",
+      "stats": {
+        "customers": "Clients Satisfaits",
+        "rating": "Note Moyenne",
+        "awards": "Prix de l'Industrie"
+      }
+    },
+    "features": {
+      "title": "Pourquoi Choisir Dermazin",
+      "subtitle": "Découvrez la différence avec nos solutions de soins de la peau scientifiquement prouvées conçues pour tous les types de peau.",
+      "feature1": {
+        "title": "Testé Cliniquement",
+        "description": "Tous nos produits subissent des tests cliniques rigoureux pour garantir la sécurité et l'efficacité."
+      },
+      "feature2": {
+        "title": "Ingrédients Naturels",
+        "description": "Nous utilisons uniquement les meilleurs ingrédients naturels provenant de fournisseurs durables."
+      },
+      "feature3": {
+        "title": "Primé",
+        "description": "Reconnu par les experts de l'industrie et les professionnels de la beauté du monde entier."
+      },
+      "feature4": {
+        "title": "Sans Cruauté",
+        "description": "Nous ne testons jamais sur les animaux et nous nous engageons dans des pratiques de beauté éthiques."
+      }
+    },
+    "products": {
+      "title": "Produits Vedettes",
+      "subtitle": "Découvrez nos solutions de soins de la peau les plus populaires, appréciées par les clients du monde entier.",
+      "product1": {
+        "name": "Sérum Hydratant",
+        "description": "Hydratation profonde avec acide hyaluronique et vitamine E pour une peau pulpeuse et radieuse."
+      },
+      "product2": {
+        "name": "Crème Rénovatrice",
+        "description": "Formule anti-âge avec peptides et rétinol pour une peau plus lisse et d'apparence plus jeune."
+      },
+      "product3": {
+        "name": "Masque Purifiant",
+        "description": "Masque d'argile détoxifiant avec extraits botaniques pour des pores clairs et raffinés."
+      },
+      "addToCart": "Ajouter au Panier",
+      "viewAll": "Voir Tous les Produits"
+    },
+    "about": {
+      "title": "La Science de la Belle Peau",
+      "description1": "Chez Dermazin, nous croyons qu'un soin de la peau vraiment exceptionnel existe à l'intersection de la science de pointe et des ingrédients les plus purs de la nature.",
+      "description2": "Notre parcours est celui d'une innovation implacable, d'une qualité inébranlable et d'un engagement profond à vous aider à obtenir votre peau la plus radieuse.",
+      "point1": "15+ Années de Recherche",
+      "point2": "Approuvé par les Dermatologues",
+      "point3": "Pratiques Durables",
+      "point4": "Reconnaissance Mondiale",
+      "learnMore": "En Savoir Plus Sur Nous",
+      "imageAlt1": "Recherche en laboratoire Dermazin",
+      "imageAlt2": "Centre d'innovation en soins de la peau"
+    },
+    "testimonials": {
+      "title": "Ce Que Disent Nos Clients",
+      "subtitle": "Rejoignez des milliers de clients satisfaits qui ont transformé leur peau avec Dermazin.",
+      "testimonial1": {
+        "text": "Dermazin a complètement transformé ma peau. Après des années de lutte contre la sécheresse, j'ai enfin trouvé des produits qui fonctionnent!"
+      },
+      "testimonial2": {
+        "text": "La qualité est exceptionnelle. J'utilise Dermazin depuis 2 ans et ma peau n'a jamais été aussi belle."
+      },
+      "testimonial3": {
+        "text": "En tant que personne à la peau sensible, j'ai été étonnée de voir à quel point ces produits sont doux mais efficaces."
+      },
+      "verifiedCustomer": "Client Vérifié"
+    },
+    "benefits": {
+      "title": "La Différence Dermazin",
+      "subtitle": "Découvrez les avantages qui nous distinguent des autres marques de soins de la peau.",
+      "benefit1": {
+        "title": "Formulation Experte",
+        "description": "Développé par des dermatologues de premier plan et des chimistes cosmétiques avec des décennies d'expérience."
+      },
+      "benefit2": {
+        "title": "Sécurité d'Abord",
+        "description": "Formules hypoallergéniques testées pour la sécurité et adaptées à tous les types de peau."
+      },
+      "benefit3": {
+        "title": "Résultats Prouvés",
+        "description": "Les études cliniques montrent des améliorations visibles de la texture, du teint et de l'hydratation de la peau."
+      }
+    },
+    "newsletter": {
+      "title": "Restez Informé",
+      "subtitle": "Recevez les derniers conseils de soins de la peau, les lancements de produits et les offres exclusives dans votre boîte de réception.",
+      "placeholder": "Entrez votre email",
+      "subscribe": "S'abonner",
+      "privacy": "Nous respectons votre vie privée et ne partagerons jamais vos informations."
+    },
+    "cta": {
+      "title": "Prêt à Transformer Votre Peau?",
+      "subtitle": "Rejoignez des milliers de clients satisfaits et découvrez la différence Dermazin aujourd'hui.",
+      "shopNow": "Acheter Maintenant",
+      "contactUs": "Nous Contacter"
+    }
+  },
+  "common": {
+    "loading": "Chargement...",
+    "male": "Masculin",
+    "female": "Féminin",
+    "select": "Sélectionner",
+    "required": "Ce champ est obligatoire",
+    "invalidEmail": "Adresse e-mail invalide",
+    "invalidPhone": "Numéro de téléphone invalide",
+    "invalidCin": "CIN invalide",
+    "dashboard": "Tableau de bord",
+    "patients": "Patients",
+    "settings": "Paramètres",
+    "logout": "Déconnexion",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "medicalBusinessManager": "Gestionnaire d'Affaires Médicales",
+    "confirmDelete": "Êtes-vous sûr de vouloir supprimer cet élément?",
+    "deleteWarning": "Cette action est annulablen, Continuer?",
+    "quickpatient": "Patient non enregistré",
+    "patient": "Patient enregistré"
+  },
+
+  "error": "Une Erreur est survenue",
+  "today": "Aujourd'hui",
+  "month": "Mois",
+  "week": "Semaine",
+  "day": "Jour",
+  "next": "Prochain",
+  "prev": "Dernier",
+  "success": "Opération éffectuée avec succée",
+  "searchPatient": "Cherchez un  patient par nom...",
+  "pagerror": {},
+  "blockedAccount": {
+    "title": "Compte Bloqué",
+    "message": "Nous sommes désolés, mais votre compte a été bloqué. Cela peut être dû à :",
+    "reasons": {
+      "tos": "Violation de nos conditions d'utilisation",
+      "suspicious": "Activité suspecte détectée",
+      "loginAttempts": "Plusieurs tentatives de connexion échouées"
+    },
+    "contactSupport": "Si vous pensez qu'il s'agit d'une erreur, veuillez contacter notre équipe d'assistance pour obtenir de l'aide.",
+    "buttons": {
+      "support": "Contacter le Support",
+      "home": "Retour à l'Accueil"
+    }
+  },
+  "tracking": {
+    "title": "Suivre votre commande",
+    "subtitle": "Entrez votre numéro de suivi pour connaître l'état de votre commande",
+    "input": {
+      "label": "Numéro de suivi",
+      "placeholder": "Entrez votre numéro de suivi",
+      "error": "Veuillez entrer un numéro de suivi valid"
+    },
+    "button": "Suivre",
+    "status": {
+      "title": "État de la commande",
+      "trackingNumber": "Numéro de suivi",
+      "NEW_PARCEL": "Nouveau Colis",
+      "WAITING_PICKUP": "En attente de ramassage",
+      "PICKED_UP": "Ramassé",
+      "SENT": "Expédié",
+      "RECEIVED": "Reçu",
+      "DISTRIBUTION": "En cours de distribution",
+      "POSTPONED": "Reporté",
+      "DELIVERED": "Livré"
+    }
+  },
+  "you-want-more-infos": "Voulez-vous plus d'informations?",
+  "contactUs-whatsapp": "Contactez notre support 24/7 sur whatsapp!",
+  "contactUs": "Contactez Nous",
+  "tags": "Tags",
+  "select-language": "Selectionnez la langue",
+  "pages": {
+    "dashboard": "Tableau de bord",
+    "users": "Utilisateurs",
+    "users/add": "Ajouter Utilisateur",
+    "reviews/add": "Ajouter Review",
+    "categories/add": "Ajouter Catégorie",
+    "products/add": "Ajouter Produit",
+    "categories/edit": "Modifier Catégorie",
+    "products/edit": "Modifier Produit",
+    "categories": "Catégories",
+    "reviews": "Reviews",
+    "settings": "Paramètres",
+    "products": "Produits"
+  },
+  "footer": {
+    "features": {
+      "delivery": {
+        "title": "Livraison Rapide",
+        "description": "Livraison gratuite pour les commandes de plus de 500 DH"
+      },
+      "quality": {
+        "title": "Qualité Garantie",
+        "description": "Produits 100% authentiques"
+      },
+      "service": {
+        "title": "Service Premium",
+        "description": "Support 24/7"
+      },
+      "payment": {
+        "title": "Paiement Sécurisé",
+        "description": "Méthodes de paiement multiples et sécurisées"
+      }
+    },
+    "newsletter": {
+      "title": "Inscrivez-vous à notre newsletter",
+      "description": "Recevez nos dernières offres et nouveautés",
+      "placeholder": "Votre email",
+      "button": "S'inscrire"
+    },
+    "quickLinks": {
+      "title": "Liens Rapides",
+      "about": "À Propos",
+      "products": "Produits",
+      "consultation": "Consultation Gratuite",
+      "track": "Suivre Commande"
+    },
+    "important": {
+      "title": "Informations Importantes",
+      "privacy": "Politique de Confidentialité",
+      "terms": "Conditions d'Utilisation",
+      "returns": "Politique de Retour",
+      "shipping": "Livraison"
+    },
+    "contact": {
+      "title": "Contactez-nous",
+      "address": "Avenue Mohammed V, Casablanca",
+      "phone": "+212 5XX-XXXXXX",
+      "email": "contact@dermazin.ma"
+    },
+    "copyright": "Tous droits réservés"
+  },
+  "navigation": {
+    "home": "Accueil",
+    "about": "À Propos",
+    "categories": "Catégories",
+    "products": "Produits",
+    "consultation": "Consultation",
+    "contact": "Contact"
+  },
+  "menu": "Menu",
+  "what-our-customers-says": "Ce que nos client disent",
+  "consultation": {
+    "howItWorks": {
+      "title": "Comment fonctionne la consultation ?",
+      "step1": "Répondez aux questions",
+      "step1Description": "Dites-nous tout sur votre type de peau et vos besoins",
+      "step2": "Analyse spécialisée",
+      "step2Description": "Nous analysons les besoins de votre peau avec précision",
+      "step3": "Recommandations personnalisées",
+      "step3Description": "Nous vous proposons la routine de soins idéale",
+      "step4": "Résultats garantis",
+      "step4Description": "Profitez d'une peau saine et éclatante"
+    },
+    "title": "Découvrez Votre Routine de Soins Idéale",
+    "header": "Consultation gratuite avec un expert",
+    "testimonials": {
+      "sara": "La consultation m'a aidé à mieux comprendre les besoins de ma peau.",
+      "layla": "La routine personnalisée a changé ma peau pour le mieux.",
+      "nour": "Enfin trouvé les bons produits pour ma peau."
+    },
+    "subtitle": "Répondez à quelques questions simples pour obtenir des recommandations personnalisées adaptées à vos besoins",
+    "features": {
+      "analysis": {
+        "title": "Analyse Personnelle",
+        "description": "Analyse précise de vos besoins uniques"
+      },
+      "recommendations": {
+        "title": "Recommandations Sur Mesure",
+        "description": "Produits sélectionnés spécialement pour votre peau"
+      },
+      "results": {
+        "title": "Résultats Garantis",
+        "description": "Une routine efficace pour une peau saine et radieuse"
+      }
+    },
+    "startButton": "Commencer la Consultation",
+    "backButton": "Retour",
+    "steps": {
+      "progress": "Étape {{current}} sur {{total}}",
+      "age": {
+        "title": "Veuillez sélectionner votre tranche d'âge",
+        "groups": {
+          "18-29": "18-29 ans",
+          "30-39": "30-39 ans",
+          "40-49": "40-49 ans",
+          "50+": "50+ ans"
+        }
+      },
+      "skinType": {
+        "title": "Quel est votre type de peau ?",
+        "types": {
+          "balanced": "Équilibrée",
+          "dry": "Sèche",
+          "oily": "Grasse",
+          "combination": "Mixte"
+        }
+      },
+      "concerns": {
+        "title": "Sélectionnez jusqu'à 3 préoccupations",
+        "max": "Vous pouvez sélectionner jusqu'à 3 préoccupations",
+        "options": {
+          "melasma": "Mélasma",
+          "acne": "Acné",
+          "darkCircles": "Cernes",
+          "dullSkin": "Teint Terne",
+          "dryness": "Sécheresse",
+          "eczema": "Eczéma",
+          "aging": "Signes de l'Âge",
+          "unevenTone": "Teint Irrégulier",
+          "redness": "Rougeurs",
+          "grainySkin": "Peau Granuleuse",
+          "congestion": "Congestion",
+          "sensitiveSkin": "Peau Sensible"
+        }
+      },
+      "pregnancy": {
+        "title": "Êtes-vous enceinte, allaitante, en projet de grossesse ou en post-partum ?",
+        "yes": "Oui",
+        "no": "Non"
+      }
+    },
+    "next": "Suivant",
+    "getRecommendations": "Obtenir les Recommandations"
+  },
+  "recommendations": {
+    "title": "Votre routine de soins de la peau personnalisée",
+    "steps": {
+      "cleanse": "Étape 1 : Nettoyer",
+      "treat": "Étape 2 : Traiter",
+      "moisturize": "Étape 3 : Hydrater"
+    },
+    "addToCart": "Ajouter tout au panier"
+  },
+
+  "values": {
+    "title": "Nos valeurs",
+    "quality": "Qualité inébranlable",
+    "innovation": "Innovation continue",
+    "sustainability": "Responsabilité environnementale",
+    "transparency": "Transparence totale"
+  },
+  "cart": {
+    "title": "Panier",
+    "empty": "Le panier est vide",
+    "startShopping": "Commencez vos achats pour ajouter des articles à votre panier",
+    "subtotal": "Sous-total",
+    "shipping": "Frais de livraison et taxes calculés après!",
+    "checkout": "Passer votre commande",
+    "continueShopping": "Continuer les achats"
+  },
+  "back": "Page Précédente",
+  "Wishlist": {
+    "title": "Liste de souhaits",
+    "empty": "La liste de souhaits est vide",
+    "startShopping": "Commencez vos achats pour ajouter des articles à votre liste de souhaits",
+    "subtotal": "Sous-total",
+    "shipping": "Frais de livraison et taxes calculés lors du passage à la caisse",
+    "checkout": "Passer votre commande",
+    "continueShopping": "Continuer les achats"
+  },
+  "currency": "DH ",
+  "headerTitle": "Livraison gratuite pour commandes à partir de 500DH.",
+  "sidebar": {
+    "take_quiz": "Faire le Quiz",
+    "no_take_quiz": "Non, merci",
+    "start_quiz": "Commencer le Quiz",
+    "begin_quiz": "Démarrer le Quiz",
+    "start_beauty_quiz": "Commencer Votre Quiz Beauté",
+    "learn_more": "En Savoir Plus",
+    "see_results": "Voir les Résultats",
+
+    "find_perfect_match": "Trouvez Votre Match Parfait",
+    "discover_perfect_match": "Découvrez Votre Match Parfait",
+    "beauty_quiz": "Quiz Beauté",
+    "personalized_beauty": "Beauté Personnalisée",
+    "personalized_recommendations": "Recommandations Personnalisées",
+    "discover_skincare_routine": "Découvrez Votre Routine de Soins Parfaite",
+
+    "quiz_description": "Répondez à notre quiz beauté rapide et découvrez des produits adaptés à vos besoins",
+    "quiz_description_curated": "Répondez à notre quiz beauté sélectionné et trouvez des produits adaptés à votre profil unique",
+    "skincare_description": "Répondez à quelques questions sur votre type de peau et vos préoccupations, et nous vous recommanderons des produits qui vous conviennent parfaitement.",
+    "hero_description": "Répondez à notre quiz de 30 secondes et découvrez des produits de soins et de maquillage parfaitement adaptés à vos besoins et préférences uniques.",
+    "floating_description": "Répondez à notre quiz et recevez des recommandations de cosmétiques personnalisées qui correspondent à vos besoins uniques.",
+    "ribbon_description": "Trouvez votre match beauté parfait avec notre quiz de produits personnalisé"
+  },
+  "categories": {
+    "skincare": "Soins de la Peau",
+    "cleanser": "Nettoyants",
+    "treatment": "Traitements",
+    "moisturizer": "Hydratants",
+    "seeAll": "Voir Tout",
+    "backToCategories": "Retour aux Catégories",
+    "notFound": "Catégorie non trouvée",
+    "name": "Nos Catégories"
+  },
+  "product": {
+    "currency": "DH",
+    "buyNow": "Achetez maintenant",
+    "addToCart": "Ajouter au Panier",
+    "addToWhishList": "Ajouter au Liste des Préférences",
+    "backToProducts": "Retour aux Produits",
+    "previousImage": "Image précédente",
+    "nextImage": "Image suivante",
+    "view": "Voir le Produit",
+    "reviews": "avis",
+    "size": "Taille",
+    "sizes": {
+      "standard": "Standard",
+      "large": "Large",
+      "extra": "Extra Large"
+    },
+    "quantity": "Quantité",
+    "features": "Caractéristiques",
+    "ingredients": "Ingrédients Principaux",
+    "howToUse": "Mode d'Emploi",
+    "reviewsTitle": "Avis Clients",
+    "verifiedBuyer": "Acheteur Vérifié",
+    "helpful": "Utile",
+    "showLess": "Voir moins",
+    "showAllReviews": "Voir tous les avis ({{count}})",
+    "notFound": "Produit non trouvé"
+  },
+  "about": {
+    "hero": {
+      "title1": "La Science d'une",
+      "title2": "Peau Radieuse",
+      "description": "Chez Dermazin, nous croyons que des soins exceptionnels existent à l'intersection de la science de pointe et des ingrédients naturels les plus purs. Notre parcours est marqué par une innovation constante, une qualité irréprochable et un engagement profond à vous aider à obtenir votre peau la plus rayonnante.",
+      "button": "Découvrir Notre Histoire"
+    },
+    "story": {
+      "title": "Notre",
+      "highlight": "Histoire",
+      "content1": "Fondée en 2015 par la dermatologue renommée Dr. Elena Zhao, Dermazin est née d'une profonde insatisfaction face au statu quo de l'industrie des soins de la peau. Après des années à voir des patients lutter avec des produits prometteurs mais peu efficaces, Dr. Zhao a imaginé une marque qui comblerait le fossé entre l'efficacité clinique et le luxe quotidien.",
+      "content2": "Ce qui a commencé dans un petit laboratoire à San Francisco est devenu une autorité mondiale en matière de soins de la peau, reconnue pour des formulations qui combinent innovation scientifique et qualité irréprochable. Notre parcours a été guidé par une philosophie simple mais puissante : des soins véritablement transformateurs doivent être soutenus par la science, respectueux de la nature et accessibles à tous.",
+      "content3": "Aujourd'hui, Dermazin est à l'avant-garde de l'innovation en matière de soins de la peau, repoussant continuellement les limites tout en restant fidèle à nos principes fondateurs. Chaque produit que nous créons témoigne de notre engagement envers l'excellence et de notre conviction que chacun mérite de se sentir bien dans sa peau."
+    },
+    "philosophy": {
+      "title": "Notre",
+      "highlight": "Philosophie",
+      "description": "Chaque produit Dermazin incarne nos convictions fondamentales et nos normes inébranlables. Ces principes guident tout ce que nous faisons, de la recherche et du développement à l'expérience client.",
+      "principles": [
+        {
+          "title": "Innovation Scientifique",
+          "description": "Nous repoussons continuellement les limites de la science des soins de la peau, investissant dans la recherche pour découvrir des ingrédients et technologies révolutionnaires."
+        },
+        {
+          "title": "Qualité Irréprochable",
+          "description": "Du sourcing des ingrédients à la formulation finale, nous maintenons les normes les plus élevées à chaque étape de notre processus de développement."
+        },
+        {
+          "title": "Responsabilité Environnementale",
+          "description": "Nous nous engageons à des pratiques durables, des emballages recyclables aux ingrédients éthiques qui respectent notre planète."
+        },
+        {
+          "title": "Transparence",
+          "description": "Nous croyons en une communication honnête sur nos ingrédients, leurs origines et la science derrière nos formulations."
+        },
+        {
+          "title": "Inclusivité",
+          "description": "Nous développons des produits qui répondent aux préoccupations diverses de tous les types de peau, tons et âges."
+        },
+        {
+          "title": "Normes Éthiques",
+          "description": "Nous maintenons des normes éthiques strictes, y compris notre engagement envers des tests sans cruauté et des pratiques de travail équitables."
+        }
+      ]
+    },
+    "journey": {
+      "title": "Notre",
+      "highlight": "Parcours",
+      "description": "L'évolution de Dermazin est marquée par une innovation continue, une croissance et une quête incessante de l'excellence en matière de soins de la peau.",
+      "milestones": [
+        {
+          "year": "2015",
+          "title": "Le Commencement",
+          "description": "Dr. Elena Zhao établit Dermazin dans un petit laboratoire à San Francisco, se concentrant sur la création de solutions de soins de la peau efficaces et fondées sur la science."
+        },
+        {
+          "year": "2017",
+          "title": "Première Gamme de Produits",
+          "description": "Lancement de notre collection Renewal, mettant en vedette notre complexe de peptides révolutionnaire qui reçoit des éloges de dermatologues du monde entier."
+        },
+        {
+          "year": "2019",
+          "title": "Engagement Durable",
+          "description": "Dermazin passe à des emballages 100% recyclables et établit le Clean Beauty Pledge, s'engageant à des pratiques respectueuses de l'environnement."
+        },
+        {
+          "year": "2021",
+          "title": "Expansion Mondiale",
+          "description": "Ouverture de bureaux internationaux à Paris, Tokyo et Sydney, apportant les solutions innovantes de Dermazin aux clients du monde entier."
+        },
+        {
+          "year": "2023",
+          "title": "Prix d'Innovation",
+          "description": "Récipiendaire du prestigieux Global Beauty Innovation Award pour notre Advanced Repair Serum, reconnu pour sa formulation révolutionnaire."
+        },
+        {
+          "year": "2024",
+          "title": "Le Futur",
+          "description": "Lancement de notre initiative de recherche la plus ambitieuse à ce jour : le Dermazin Skin Science Institute dédié à la technologie de soins de la peau de nouvelle génération."
+        }
+      ]
+    },
+    "team": {
+      "title": "L'",
+      "highlight": "Équipe",
+      "description": "Rencontrez les experts passionnés derrière l'innovation et l'excellence de Dermazin. Notre équipe diversifiée réunit des expertises en dermatologie, chimie cosmétique et pratiques commerciales durables.",
+      "members": [
+        {
+          "name": "Dr. Elena Zhao",
+          "title": "Fondatrice & Directrice Scientifique",
+          "bio": "Avec plus de 20 ans d'expérience en dermatologie, Dr. Zhao a fondé Dermazin pour combler le fossé entre la science clinique et les soins quotidiens."
+        },
+        {
+          "name": "Marcus Williams",
+          "title": "Directeur Général",
+          "bio": "Marcus apporte 15 ans d'expérience dans l'industrie de la beauté à Dermazin, avec une passion pour construire des marques durables et éthiques qui offrent des résultats exceptionnels."
+        },
+        {
+          "name": "Dr. Aisha Patel",
+          "title": "Chef de la Recherche & Développement",
+          "bio": "Chimiste cosmétique avec un doctorat en biochimie, Dr. Patel dirige notre équipe de développement de produits innovants avec un accent sur les ingrédients révolutionnaires."
+        },
+        {
+          "name": "Thomas Nakamura",
+          "title": "Directeur Artistique",
+          "bio": "Thomas façonne l'identité visuelle et l'expérience de marque de Dermazin, apportant une esthétique minimaliste qui reflète notre engagement envers une simplicité raffinée."
+        }
+      ],
+      "footer": "Notre équipe étendue comprend plus de 50 professionnels dédiés dans la recherche, la production et l'expérience client.",
+      "button": "Rejoindre Notre Équipe"
+    },
+    "testimonials": {
+      "title": "Témoignages",
+      "highlight": "Clients",
+      "description": "Découvrez ce que nos clients disent de leur expérience Dermazin et des résultats transformateurs qu'ils ont obtenus.",
+      "items": [
+        {
+          "quote": "Les produits Dermazin ont complètement transformé ma peau. Après des années de lutte avec la sensibilité, j'ai enfin trouvé des produits qui donnent des résultats sans irritation.",
+          "author": "Emma Richardson",
+          "title": "Passionnée de Soins de la Peau"
+        },
+        {
+          "quote": "En tant que dermatologue, je ne recommande que les produits en lesquels je crois vraiment. Les formulations scientifiques de Dermazin font partie des rares que je suggère à mes patients en toute confiance.",
+          "author": "Dr. Michael Chen",
+          "title": "Dermatologue Certifié"
+        },
+        {
+          "quote": "L'attention portée aux détails dans les formulations de Dermazin est inégalée. Leur engagement envers des ingrédients propres et efficaces a fait de moi une cliente fidèle à vie.",
+          "author": "Sophia Martinez",
+          "title": "Rédactrice Beauté"
+        }
+      ]
+    },
+    "productPhilosophy": {
+      "title": "Notre Philosophie",
+      "highlight": "Produit",
+      "content1": "Chez Dermazin, nous croyons que des soins exceptionnels naissent d'un équilibre parfait entre science et nature. Chaque produit que nous créons subit des recherches, un développement et des tests rigoureux pour garantir des résultats visibles tout en respectant la biologie naturelle de votre peau.",
+      "content2": "Nos formulations incluent des ingrédients actifs cliniquement prouvés à des concentrations optimales, soigneusement sélectionnés pour leur efficacité et leur sécurité. Nous privilégions des formulations propres, évitant les additifs inutiles, les produits chimiques agressifs et les irritants potentiels.",
+      "content3": "De nos complexes de peptides signature à nos extraits botaniques exclusifs, chaque ingrédient sert un objectif précis tout en contribuant à la santé globale et à la radiance de votre peau.",
+      "button": "Découvrir Nos Produits"
+    },
+    "cta": {
+      "title": "Découvrez la",
+      "highlight": "Différence Dermazin",
+      "description": "Rejoignez des milliers de clients satisfaits qui ont transformé leur peau avec nos formulations scientifiques et efficaces.",
+      "buttons": {
+        "primary": "Acheter la Collection",
+        "secondary": "Nous Contacter"
+      }
+    }
+  },
+  "contact": {
+    "hero": {
+      "title": "Contactez-nous",
+      "description": "Nous accordons de l'importance à vos demandes et commentaires. Notre équipe est dédiée à vous fournir un service et un support exceptionnels."
+    },
+    "mission": {
+      "title": "Notre",
+      "highlight": "Mission",
+      "content1": "Chez Dermazin, nous croyons que la véritable beauté émerge de l'harmonie entre la science et la nature. Notre engagement envers l'excellence nous pousse à créer des produits qui non seulement améliorent votre apparence mais nourrissent également la vitalité inhérente de votre peau.",
+      "content2": "Chaque formulation est méticuleusement élaborée avec les meilleurs ingrédients, soutenue par une recherche scientifique rigoureuse, et livrée avec la promesse de résultats transformateurs."
+    },
+    "values": [
+      {
+        "title": "Excellence",
+        "description": "Nous recherchons la perfection dans chaque produit que nous créons, garantissant une qualité irréprochable."
+      },
+      {
+        "title": "Innovation",
+        "description": "Notre équipe de recherche explore continuellement de nouvelles frontières dans la science des soins de la peau."
+      },
+      {
+        "title": "Durabilité",
+        "description": "Nous nous engageons à adopter des pratiques respectueuses de l'environnement dans toutes nos opérations."
+      },
+      {
+        "title": "Intégrité",
+        "description": "La transparence et l'honnêteté guident chaque aspect de notre entreprise et de nos formulations."
+      }
+    ],
+    "info": {
+      "title": "Informations de",
+      "highlight": "Contact",
+      "description": "Nous accueillons vos demandes et sommes impatients de vous aider avec toutes questions concernant nos produits, partenariats ou services.",
+      "email": {
+        "title": "Email",
+        "general": "Pour les demandes générales :",
+        "press": "Pour les demandes de presse :"
+      },
+      "phone": {
+        "title": "Téléphone",
+        "customerService": "Service client :",
+        "international": "International :"
+      },
+      "address": {
+        "title": "Adresse",
+        "line1": "Siège social de Dermazin",
+        "line2": "TechnoPark, Tilila",
+        "line3": "Agadir, SoussMassa",
+        "line4": "Maroc."
+      },
+      "hours": {
+        "title": "Heures d'ouverture",
+        "weekdays": "Lundi - Vendredi :",
+        "weekdaysTime": "9h - 18h",
+        "saturday": "Samedi :",
+        "saturdayTime": "10h - 16h",
+        "sunday": "Dimanche :",
+        "sundayTime": "Fermé"
+      },
+      "connect": "Connectez-vous avec nous"
+    },
+    "form": {
+      "title": "Envoyez-nous un",
+      "highlight": "Message",
+      "nameLabel": "Nom complet",
+      "namePlaceholder": "Votre nom complet",
+      "emailLabel": "Adresse email",
+      "emailPlaceholder": "votre.email@exemple.com",
+      "subjectLabel": "Sujet",
+      "subjectPlaceholder": "Sélectionnez un sujet",
+      "subjectOptions": {
+        "productInquiry": "Demande de produit",
+        "orderSupport": "Support de commande",
+        "partnership": "Opportunité de partenariat",
+        "press": "Demande de presse",
+        "careers": "Carrières",
+        "other": "Autre"
+      },
+      "messageLabel": "Message",
+      "messagePlaceholder": "Veuillez fournir des détails sur votre demande...",
+      "captchaNotice1": "Ce site est protégé par reCAPTCHA et la",
+      "captchaNotice2": "Politique de confidentialité",
+      "captchaNotice3": "de Google et les",
+      "captchaNotice4": "Conditions d'utilisation",
+      "captchaNotice5": "s'appliquent.",
+      "submitting": "Envoi en cours...",
+      "submit": "Envoyer le message",
+      "success": {
+        "title": "Merci",
+        "message": "Votre message a été reçu. Notre équipe examinera votre demande et répondra rapidement, généralement dans les 24 à 48 heures ouvrables.",
+        "button": "Envoyer un autre message"
+      }
+    },
+    "formErrors": {
+      "nameRequired": "Le nom est requis",
+      "emailRequired": "L'email est requis",
+      "emailInvalid": "Veuillez entrer une adresse email valide",
+      "subjectRequired": "Veuillez sélectionner un sujet",
+      "messageRequired": "Le message est requis",
+      "captchaRequired": "Veuillez compléter la vérification reCAPTCHA"
+    },
+    "map": {
+      "title": "Visitez notre",
+      "highlight": "Boutique phare",
+      "description": "Découvrez la collection complète de Dermazin et recevez des consultations de soins de la peau personnalisées dans notre emplacement phare.",
+      "iframeTitle": "Emplacement de la boutique phare Dermazin",
+      "storeTitle": "Dermazin Flagship",
+      "address": {
+        "line1": "TechnoPark, Tilila",
+        "line2": "Agadir, SoussMassa"
+      },
+      "directions": "Obtenir l'itinéraire"
+    },
+    "faq": {
+      "title1": "Questions",
+      "title2": "Fréquemment Posées",
+      "description": "Trouvez des réponses à nos questions les plus fréquemment posées. Si vous ne trouvez pas ce que vous cherchez, veuillez nous contacter.",
+      "faqs": [
+        {
+          "question": "Quelle est la meilleure façon de contacter le service client ?",
+          "answer": "La manière la plus efficace d'atteindre notre équipe de service client est par email à support@dermazin.com. Nous visons à répondre à toutes les demandes dans les 24 à 48 heures ouvrables. Pour les questions urgentes, vous pouvez nous appeler au +1 (415) 555-0123 pendant nos heures d'ouverture."
+        },
+        {
+          "question": "Proposez-vous des consultations pour les routines de soins de la peau ?",
+          "answer": "Oui, nous proposons des consultations de soins de la peau gratuites à la fois virtuellement et en personne dans notre boutique phare. Nos dermatologues certifiés et spécialistes des soins de la peau peuvent analyser votre peau et recommander une routine personnalisée utilisant nos produits. Vous pouvez réserver une consultation via notre site web ou en appelant notre service client."
+        },
+        {
+          "question": "Quelle est votre politique de retour ?",
+          "answer": "Nous offrons une garantie de satisfaction de 30 jours sur tous nos produits. Si vous n'êtes pas entièrement satisfait de votre achat, vous pouvez le retourner dans les 30 jours suivant la réception pour un remboursement complet ou un échange. Les produits doivent être dans leur emballage d'origine et au moins remplis à 75% pour être éligibles au retour."
+        },
+        {
+          "question": "Vos produits sont-ils testés sur les animaux ?",
+          "answer": "Non, Dermazin est fièrement sans cruauté. Nous ne testons pas nos produits ou ingrédients sur les animaux, et nous ne travaillons pas avec des fournisseurs qui pratiquent des tests sur les animaux. Nous sommes certifiés par Leaping Bunny et le programme Beauty Without Bunnies de PETA."
+        },
+        {
+          "question": "Livrez-vous à l'international ?",
+          "answer": "Oui, nous livrons dans plus de 50 pays à travers le monde. Les frais et délais de livraison internationaux varient selon l'emplacement. Vous pouvez voir les options d'expédition spécifiques pour votre pays lors du paiement. Veuillez noter que les clients sont responsables de tous droits de douane ou taxes pouvant s'appliquer."
+        }
+      ],
+      "moreQuestions": "Vous avez encore des questions ?",
+      "contactButton": "Contactez notre équipe de support"
+    }
+  }
+}
