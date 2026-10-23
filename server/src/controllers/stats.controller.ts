@@ -660,43 +660,48 @@ const addProductsAndServicesToStats = async (
   }
 };
 
+/** Deletes a ticket and puts its products back in stock; false if not found */
+export const removeSale = async (id: number, deletedBy?: string) => {
+  const deleted = await prisma.sales.findUnique({
+    where: { id },
+    include: {
+      local: { select: { name: true } },
+      user: { select: { name: true } },
+      products: true,
+    },
+  });
+  if (!deleted) return false;
+
+  await prisma.sales.delete({ where: { id } });
+
+  // restock one line at a time: concurrent upserts on the same product race
+  for (const item of deleted.products) {
+    await addOrReduceStock(
+      item.product_id,
+      item.quantity,
+      deleted.local_id,
+      "up"
+    );
+  }
+
+  notifySaleDeleted(deleted, deletedBy);
+  return true;
+};
+
 export const deleteSale = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
   try {
-    const deleted = await prisma.sales.findUnique({
-      where: { id: +id },
-      include: {
-        local: { select: { name: true } },
-        user: { select: { name: true } },
-      },
-    });
-
-    const sale = await prisma.salesProducts.findMany({
-      where: { sale_id: +id },
-      include: { sale: true, product: true },
-    });
-
-    if (sale.length > 0) {
-      sale.forEach(async (item) => {
-        await addOrReduceStock(
-          item.product.id,
-          item.quantity,
-          item.sale.local_id,
-          "up"
-        );
-      });
+    if (!(await removeSale(+id, req.session.user?.name))) {
+      res.status(404).json({ message: "Ticket introuvable" });
+      return;
     }
-
-    await prisma.sales.delete({
-      where: { id: +id },
-    });
-    if (deleted) notifySaleDeleted(deleted, req.session.user?.name);
     res.status(200).json({ message: "Sale deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete sale", error });
+    console.error("Failed to delete sale:", error);
+    res.status(500).json({ message: "Échec de la suppression du ticket" });
   }
 };
 

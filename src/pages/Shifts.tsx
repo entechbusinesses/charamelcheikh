@@ -6,6 +6,7 @@ import {
   Banknote,
   ClockIcon,
   CreditCard,
+  EyeIcon,
   Loader2,
   LockIcon,
   PrinterIcon,
@@ -13,11 +14,12 @@ import {
   WalletIcon,
 } from "lucide-react";
 import api from "@/apis/api";
+import { notifyError } from "@/lib/notify";
 import Title from "@/components/ui/Title";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
 import ShiftTicket from "@/components/shift/ShiftTicket";
+import ShiftDetailsModal from "@/components/shift/ShiftDetailsModal";
 import {
-  apiErrorMessage,
   formatDH,
   formatDuration,
 } from "@/components/shift/utils";
@@ -66,8 +68,9 @@ export default function Shifts() {
   const [locals, setLocals] = useState<Local[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
+  // read-only detail (totals + tickets), open to cashiers for their own shifts
+  const [detailsId, setDetailsId] = useState<number | null>(null);
 
   // printing: one shift ticket, or the whole filtered list
   const [ticketShift, setTicketShift] = useState<Shift | null>(null);
@@ -114,10 +117,8 @@ export default function Shifts() {
         },
       });
       setShifts(response.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching shifts:", err);
-      setError(apiErrorMessage(err, "Échec du chargement des shifts."));
+      notifyError(err, "Échec du chargement des shifts.");
     } finally {
       setLoading(false);
     }
@@ -143,7 +144,7 @@ export default function Shifts() {
         setTicketShift(response.data.data);
       }
     } catch (err) {
-      alert(apiErrorMessage(err, "Impossible de clôturer ce shift."));
+      notifyError(err, "Impossible de clôturer ce shift.");
     } finally {
       setBusy(null);
     }
@@ -214,7 +215,7 @@ export default function Shifts() {
   ];
 
   return (
-    <div className="px-6 space-y-5">
+    <div className="px-4 md:px-6 space-y-5">
       <Title
         Icon={ClockIcon}
         title="Gestion des shifts"
@@ -319,15 +320,13 @@ export default function Shifts() {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
           <LoadingSpinning />
-        ) : error ? (
-          <p className="p-6 text-center text-red-600">{error}</p>
         ) : shifts.length === 0 ? (
           <p className="p-10 text-center text-gray-500">
             Aucun shift pour ces filtres.
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="mobile-cards w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
                   {[
@@ -403,6 +402,14 @@ export default function Shifts() {
                     <td className="px-4 py-3 whitespace-nowrap">
                       <div className="flex gap-2">
                         <button
+                          onClick={() => setDetailsId(shift.id)}
+                          title="Voir les tickets du shift"
+                          className="flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1.5 text-slate-700 hover:bg-slate-200"
+                        >
+                          <EyeIcon className="size-4" />
+                          Détails
+                        </button>
+                        <button
                           onClick={() => setTicketShift({ ...shift })}
                           title="Imprimer le ticket"
                           className="flex items-center gap-1 rounded-md bg-blue-100 px-2 py-1.5 text-blue-700 hover:bg-blue-200"
@@ -434,6 +441,11 @@ export default function Shifts() {
           </div>
         )}
       </div>
+
+      <ShiftDetailsModal
+        shiftId={detailsId}
+        onClose={() => setDetailsId(null)}
+      />
 
       {/* Printable content */}
       <div className="print:block hidden" ref={ticketRef}>

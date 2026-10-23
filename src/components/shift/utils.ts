@@ -1,8 +1,4 @@
-import { isAxiosError } from "axios";
-
-/** Server message of a failed request, or `fallback` */
-export const apiErrorMessage = (error: unknown, fallback: string) =>
-  (isAxiosError(error) && error.response?.data?.message) || fallback;
+export { apiErrorMessage } from "@/lib/notify";
 
 export const formatDH = (n: number) => `${n.toFixed(2)} DH`;
 

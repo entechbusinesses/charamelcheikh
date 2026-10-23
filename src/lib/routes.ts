@@ -85,7 +85,7 @@ export const routeConfig = [
   {
     path: "/shifts",
     element: Shifts,
-    roles: ["ADMIN", "CAISSIER"],
+    roles: ["ADMIN"],
   },
   {
     path: "/stock-shifts",

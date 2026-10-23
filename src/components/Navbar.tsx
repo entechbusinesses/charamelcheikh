@@ -10,6 +10,9 @@ import {
   FolderSync,
   LucidePackagePlus,
   BarChart3,
+  Maximize,
+  Minimize,
+  InboxIcon,
   type LucideIcon,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -19,6 +22,25 @@ import ShiftNavWidget from "@/components/shift/ShiftNavWidget";
 import NotificationButton, {
   NotificationPrompt,
 } from "@/components/NotificationButton";
+import { useTicketRequests } from "@/components/ticketRequests/TicketRequestsProvider";
+
+/** Admins: pending ticket delete / edit requests, reopens the popup */
+function TicketRequestsButton({ className }: { className?: string }) {
+  const { pendingCount, openRequests } = useTicketRequests();
+  if (pendingCount === 0) return null;
+  return (
+    <button
+      onClick={openRequests}
+      title={`${pendingCount} demande(s) sur les tickets`}
+      className={`relative flex items-center rounded-lg bg-orange-100 p-2 text-orange-600 transition-colors hover:bg-orange-50 ${className ?? ""}`}
+    >
+      <InboxIcon className="size-7" />
+      <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-red-600 text-[11px] font-bold text-white">
+        {pendingCount}
+      </span>
+    </button>
+  );
+}
 
 const mobileTabs: { path: string; label: string; icon: LucideIcon }[] = [
   { path: "/", label: "Accueil", icon: Home },
@@ -31,6 +53,19 @@ const mobileTabs: { path: string; label: string; icon: LucideIcon }[] = [
 function Navbar() {
   const [currentTime, setCurrentTime] = useState(new Date());
   const { user, logout } = useAuth();
+  const [isFullscreen, setIsFullscreen] = useState(!!document.fullscreenElement);
+
+  // also follows Esc / F11 exits
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    else document.documentElement.requestFullscreen().catch(() => {});
+  };
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -72,6 +107,9 @@ function Navbar() {
     <>
       {/* Notifications sur mobile : popup en haut, pas de place dans la barre */}
       <NotificationPrompt />
+
+      {/* Demandes sur les tickets (admin), sur mobile */}
+      <TicketRequestsButton className="md:hidden fixed right-3 top-3 z-50 shadow-md" />
 
       {/* Barre de navigation mobile (bas de l'écran) */}
       <nav className="md:hidden fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white/95 backdrop-blur pb-[env(safe-area-inset-bottom)]">
@@ -143,20 +181,34 @@ function Navbar() {
             {/* Bouton de déconnexion */}
             <section className="flex items-center flex-row-reverse gap-2">
               <NotificationButton className="order-last size-11 bg-amber-100 p-2 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors disabled:opacity-50" />
+              <TicketRequestsButton />
               <button
                 onClick={logout}
                 className="flex items-center bg-red-100 gap-2 p-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-                title="Main"
+                title="Se déconnecter"
               >
                 <LogOut className="size-7" />
               </button>
               <Link
                 to="/"
                 className="flex items-center bg-green-100 gap-2 p-2 text-sm font-medium text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors"
-                title="Se déconnecter"
+                title="Accueil"
               >
                 <Home className="size-7" />
               </Link>
+              {document.fullscreenEnabled && (
+                <button
+                  onClick={toggleFullscreen}
+                  className="flex items-center bg-slate-100 gap-2 p-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors"
+                  title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+                >
+                  {isFullscreen ? (
+                    <Minimize className="size-7" />
+                  ) : (
+                    <Maximize className="size-7" />
+                  )}
+                </button>
+              )}
             </section>
           </div>
         </div>

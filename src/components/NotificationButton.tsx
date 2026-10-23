@@ -6,6 +6,7 @@ import {
   sendTestNotification,
 } from "@/lib/pushNotifications";
 import { useAuth } from "@/contexts/AuthContext";
+import { notifyError } from "@/lib/notify";
 
 type State = "unsupported" | NotificationPermission;
 
@@ -61,11 +62,12 @@ function NotificationButton({ className = "" }: { className?: string }) {
 
   const onClick = async () => {
     if (state === "unsupported") {
-      alert(reason);
+      notifyError(null, reason ?? "Notifications non supportées sur cet appareil.");
       return;
     }
     if (state === "denied") {
-      alert(
+      notifyError(
+        null,
         "Les notifications sont bloquées. Autorisez-les dans les paramètres du navigateur pour ce site."
       );
       return;

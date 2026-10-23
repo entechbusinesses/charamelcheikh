@@ -1,4 +1,5 @@
 import api from "@/apis/api";
+import { notifyError } from "@/lib/notify";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -46,7 +47,6 @@ export default function AddReception() {
   const [loading, setLoading] = useState(false);
   const [locals, setLocals] = useState<Local[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [error, setError] = useState<string | null>("");
   const [search, setSearch] = useState("");
   const [highlight, setHighlight] = useState(0);
   const [pendingProduct, setPendingProduct] = useState<Product | null>(null);
@@ -123,10 +123,8 @@ export default function AddReception() {
       setLoading(true);
       const response = await api.get("/locals/list?count=true&depot=true");
       setLocals(response.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching locals:", err);
-      setError("Failed to load locals. Please try again later.");
+      notifyError(err, "Impossible de charger les locaux.");
     } finally {
       setLoading(false);
     }
@@ -139,10 +137,8 @@ export default function AddReception() {
         `/products/list?local_id=${formData.from_id}`,
       );
       setProducts(prods.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching products:", err);
-      setError("Failed to load products. Please try again later.");
+      notifyError(err, "Impossible de charger les produits.");
     } finally {
       setLoading(false);
     }
@@ -172,8 +168,7 @@ export default function AddReception() {
 
       navigate("/reception");
     } catch (error) {
-      console.log(error);
-      setError("error");
+      notifyError(error, "Impossible d'enregistrer le bon de réception.");
     }
   };
 
@@ -189,22 +184,8 @@ export default function AddReception() {
 
   if (loading) return <LoadingSpinning />;
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-          <div className="text-red-500 font-bold mb-4">Erreur</div>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <p className="text-gray-500 text-sm">
-            Utilisation des données de démonstration.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="px-6 space-y-5">
+    <div className="px-4 md:px-6 space-y-5">
       <Title
         title="Ajouter un Bon de Reception"
         add={false}
@@ -213,7 +194,7 @@ export default function AddReception() {
       />
 
       <main className="space-y-5">
-        <section className="md:grid grid-cols-3 gap-5 items-center">
+        <section className="space-y-4 md:space-y-0 md:grid grid-cols-3 gap-5 items-center">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Date du Bon
@@ -462,7 +443,7 @@ export default function AddReception() {
             Produits à envoyer:
           </label>
           <div className="overflow-x-auto bg-white rounded-lg shadow">
-            <table className="w-full min-w-[700px]">
+            <table className="mobile-cards w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

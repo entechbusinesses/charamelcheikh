@@ -32,6 +32,7 @@ import {
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { fr } from "date-fns/locale";
 import api from "@/apis/api";
+import { notifyError } from "@/lib/notify";
 import Title from "@/components/ui/Title";
 import { cn } from "@/lib/utils";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
@@ -334,7 +335,6 @@ export default function Stats() {
   const [locals, setLocals] = useState<{ id: number; name: string; type?: string }[]>([]);
   const [data, setData] = useState<Dashboard | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [productMetric, setProductMetric] = useState<"revenue" | "quantity">("revenue");
 
   useEffect(() => {
@@ -350,12 +350,9 @@ export default function Stats() {
     api
       .get("/sales/dashboard", { params: { from, to, local_id: local } })
       .then((r) => {
-        if (!cancelled) {
-          setData(r.data.data);
-          setError(null);
-        }
+        if (!cancelled) setData(r.data.data);
       })
-      .catch(() => !cancelled && setError("Impossible de charger les statistiques."))
+      .catch((err) => !cancelled && notifyError(err, "Impossible de charger les statistiques."))
       .finally(() => !cancelled && setLoading(false));
     return () => {
       cancelled = true;
@@ -395,7 +392,7 @@ export default function Stats() {
   const p = data?.previous;
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-10 font-poppins md:px-2">
+    <div className="px-4 pb-10 font-poppins md:px-2">
       <Title
         title="Statistiques"
         description="Chiffre d'affaires, bénéfices et évolution de l'activité"
@@ -456,10 +453,6 @@ export default function Stats() {
           {loading && <Loader2 className="size-4 animate-spin text-slate-400" />}
         </div>
       </div>
-
-      {error && (
-        <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error}</div>
-      )}
 
       {!data || !s || !p || !derived ? (
         loading ? (
@@ -890,7 +883,7 @@ function ProductsTable({ rows }: { rows: Dashboard["products"] }) {
   );
   return (
     <div className="max-h-[420px] overflow-auto rounded-xl border border-slate-100">
-      <table className="w-full text-sm">
+      <table className="mobile-cards w-full text-sm">
         <thead className="sticky top-0 bg-slate-50 text-xs">
           <tr>
             <th className="px-3 py-2 text-left font-medium text-slate-500">Produit</th>

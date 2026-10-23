@@ -14,6 +14,8 @@ import {
   Users2Icon,
 } from "lucide-react";
 import api from "@/apis/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { notifyError } from "@/lib/notify";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
 import Modal from "@/components/ui/Modal";
 
@@ -42,6 +44,7 @@ interface UserFormData {
 }
 
 function Users() {
+  const { user: currentUser, refreshUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [showModal, setShowModal] = useState(false);
@@ -50,7 +53,6 @@ function Users() {
   const [statusFilter, setStatusFilter] = useState<string>("tous");
   const [roleFilter, setRoleFilter] = useState<string>("tous");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [LIEUX_TRAVAIL, setLIEUX_TRAVAILLE] = useState<Local[]>([]);
 
   const [formData, setFormData] = useState<UserFormData>({
@@ -68,10 +70,8 @@ function Users() {
       setUsers(response.data);
       setFilteredUsers(response.data);
       setLIEUX_TRAVAILLE(lieux.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de charger les utilisateurs.");
     } finally {
       setLoading(false);
     }
@@ -118,14 +118,15 @@ function Users() {
         await api.put(`/auth/edit/${editingUser.id}`, formData);
 
         await fetchUsers();
+        // editing yourself (e.g. your local): apply it now in the whole app
+        if (editingUser.id === currentUser?.id) await refreshUser();
       } else {
         await api.post("/auth/register", formData);
         await fetchUsers();
       }
       resetForm();
     } catch (err) {
-      console.error("Error saving user:", err);
-      alert("Failed to save user. Please try again.");
+      notifyError(err, "Impossible d'enregistrer l'utilisateur.");
     }
   };
 
@@ -162,8 +163,7 @@ function Users() {
 
       await fetchUsers();
     } catch (err) {
-      console.error("Error updating user ban status:", err);
-      alert("Failed to update user status. Please try again.");
+      notifyError(err, "Impossible de modifier le statut de l'utilisateur.");
     }
   };
 
@@ -208,25 +208,11 @@ function Users() {
     return <LoadingSpinning />;
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-          <div className="text-red-500 font-bold mb-4">Erreur</div>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <p className="text-gray-500 text-sm">
-            Utilisation des données de démonstration.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="px-6 space-y-5">
+    <div className="px-4 md:px-6 space-y-5">
       {/* En-tête */}
       <div className="mt-5">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-blue-600 p-2 rounded-lg">
               <Users2Icon className="w-6 h-6 text-white" />
@@ -242,7 +228,7 @@ function Users() {
           </div>
           <button
             onClick={handleAdd}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
           >
             <UserPlus2 className="w-4 h-4" />
             Ajouter un utilisateur
@@ -262,7 +248,7 @@ function Users() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 [&>*]:min-w-0 [&>*]:flex-1 md:flex-nowrap md:[&>*]:flex-none">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -287,7 +273,7 @@ function Users() {
       {/* Users table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="mobile-cards w-full">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">

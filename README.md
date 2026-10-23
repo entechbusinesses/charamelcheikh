@@ -38,7 +38,7 @@ A point-of-sale and back-office app for a hammam business (multiple points of sa
 
 ## Data model (Prisma / MySQL)
 
-`User` (roles `ADMIN` / `CAISSIER`), `Session`, `Locals` (point of sale, type `BELDI` / `TURKI` / `DEPOT`), `Categories`, `Products`, `Services`, `Stock`, `StockHistory`, `Sales`, `SalesProducts`, `SalesServices`, `ReceptionList`, `ReceptionProducts`, `TotalDay`.
+`User` (roles `ADMIN` / `CAISSIER`), `Session`, `Locals` (point of sale, type `BELDI` / `TURKI` / `DEPOT`), `Categories`, `Products`, `Services`, `Stock`, `StockHistory`, `Sales`, `SalesProducts`, `SalesServices`, `ReceptionList`, `ReceptionProducts`, `TotalDay`, `TicketRequest` (cashier requests to delete / edit a ticket, validated by an admin; table created by `server/prisma/manual/2026-10-23_add_ticket_requests.sql`).
 
 ## API endpoints
 
@@ -54,6 +54,7 @@ All are prefixed with `/api`.
 | `/sales` | `GET /list`, `GET /items/:stat_id`, `POST /add`, `POST /add_item`, `DELETE /delete/:id`, `DELETE /delete_item`, `PUT /update_quantity`, `GET /all_products_services`, `GET /report` |
 | `/reception` | `POST /add`, `GET /list`, `GET /items`, `DELETE /remove/:id` |
 | `/cloture` | `GET /`, `POST /add`, `GET /list`, `PUT /update` |
+| `/ticket-requests` | `GET /?status=PENDING`, `POST /` (cashier asks to delete / edit a ticket), `POST /:id/review` (admin, `{ approve }`) |
 | `/uploads` | Static uploaded images |
 
 ## Environment
@@ -65,7 +66,7 @@ DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DBNAME"
 SESSION_SECRET=...
 API_TOKEN=...
 NODE_ENV=production
-PORT=3000            # note: currently unused — server.ts hard-codes 5000
+PORT=5000            # Hostinger sets its own PORT, which takes priority
 ```
 
 ## Getting started
@@ -94,7 +95,26 @@ Other scripts:
 
 ## Production
 
-The server serves the SPA from `path.join(__dirname, "../client")`, i.e. a `client/` folder next to the server's build output. Copy the frontend build (`dist/`) there when deploying.
+The server serves the SPA from `path.join(__dirname, "../client")`, i.e. a `client/` folder next to the server's build output, and uploaded images from `uploads/` in the working directory.
+
+### Deploy to Hostinger (Node.js Web App)
+
+```bash
+npm run build:hostinger
+```
+
+This builds the frontend and server and writes `charamelcheikh-hostinger.zip` (also unzipped in `build/hostinger/`). It contains the compiled server, the React build, Prisma schema/migrations, `uploads/`, `server/.env` and the Firebase service account, so **never commit or share it**.
+
+In hPanel → **Websites → Add website → Node.js Apps**:
+
+1. Choose **Upload your website files** and upload the zip.
+2. Build settings: framework **Express** (or Other), Node **20+**, entry file **`dist/server.js`**, package manager **npm**, leave the build command empty (the bundle is already built; `npm install` runs `prisma generate` automatically).
+3. Environment variables: the bundled `.env` is used, but you can override `DATABASE_URL`, `SESSION_SECRET`, `API_TOKEN` there. Don't set `PORT`; Hostinger provides it.
+4. Deploy. If the database is new, run `npm run migrate` once (or import a dump from `backups/`).
+
+The MySQL host in `DATABASE_URL` must accept connections from Hostinger. If you use Hostinger's own MySQL, create it under **Databases** and put its host/user/password in `DATABASE_URL`.
+
+Redeploying replaces the app files, so images uploaded in production since the last bundle are lost unless you download `uploads/` from the File Manager first and copy them into `server/uploads/` before rebuilding.
 
 ## Troubleshooting
 
@@ -102,4 +122,4 @@ The server serves the SPA from `path.join(__dirname, "../client")`, i.e. a `clie
 - **`EADDRINUSE :::5000`** — another server is already running on port 5000. Stop it (`Get-NetTCPConnection -LocalPort 5000` in PowerShell shows the PID).
 - **API calls fail in dev with 404** — make sure the Vite proxy in `vite.config.ts` is present and the backend is running on 5000.
 - **`Failed to connect to the database`** — check `DATABASE_URL` and that the remote MySQL host is reachable.
-- `server/package.json`'s `start` script (`node .`) points at `server.ts` and won't work with plain Node; use `node dist/server.js` instead.
+- `server/package.json`'s `start` script (`node .`) points at `server.ts` and won't work with plain Node; use `node dist/server.js` instead (the Hostinger bundle's `package.json` already does).

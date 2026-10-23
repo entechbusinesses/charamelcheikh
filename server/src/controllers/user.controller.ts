@@ -91,15 +91,19 @@ export const me = async (req: Request, res: Response): Promise<void> => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.session.user.id },
-      select: { role: true, name: true, local: true, id: true },
+      select: { role: true, name: true, local: true, id: true, banned: true },
     });
 
-    if (!user) {
-      res.status(404).json({ error: "User not found" });
+    if (!user || user.banned) {
+      req.session.destroy(() => {});
+      res.status(401).json({ error: "No active session." });
       return;
     }
 
-    res.json(user);
+    // An admin may have changed this user's name, role or local since login
+    const { banned, ...fresh } = user;
+    req.session.user = fresh;
+    res.json(fresh);
   } catch (error) {
     console.error("Failed to fetch user details:", error);
     res.status(500).json({ error: "Internal server error" });

@@ -7,10 +7,12 @@ import {
   Building,
   LucideHome,
 } from "lucide-react";
-import api, { API_BASE_URL } from "@/apis/api";
+import api from "@/apis/api";
+import { notifyError } from "@/lib/notify";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
 import Title from "@/components/ui/Title";
 import Modal from "@/components/ui/Modal";
+import SafeImage from "@/components/ui/SafeImage";
 
 type PDVTypes = "BELDI" | "TURKI" | "DEPOT";
 
@@ -38,7 +40,6 @@ function LocalsManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("tous");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<LocalFormData>({
     name: "",
@@ -50,7 +51,7 @@ function LocalsManagement() {
     const file = event.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Please upload a valid image file.");
+        notifyError(null, "Veuillez choisir un fichier image valide.");
         return;
       }
       setFormData({ ...formData, logo: file });
@@ -63,10 +64,8 @@ function LocalsManagement() {
       const response = await api.get("/locals/list?count=true&depot=true");
       setLocals(response.data.data);
       setFilteredLocals(response.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching locals:", err);
-      setError("Failed to load locals. Please try again later.");
+      notifyError(err, "Impossible de charger les locaux.");
     } finally {
       setLoading(false);
     }
@@ -129,8 +128,7 @@ function LocalsManagement() {
       }
       resetForm();
     } catch (err) {
-      console.error("Error saving local:", err);
-      alert("Failed to save local. Please try again.");
+      notifyError(err, "Impossible d'enregistrer le local.");
     }
   };
 
@@ -186,22 +184,8 @@ function LocalsManagement() {
     return <LoadingSpinning />;
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-          <div className="text-red-500 font-bold mb-4">Erreur</div>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <p className="text-gray-500 text-sm">
-            Utilisation des données de démonstration.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="px-6 space-y-5 mt-5">
+    <div className="px-4 md:px-6 space-y-5 mt-5">
       {/* En-tête */}
 
       <Title
@@ -225,7 +209,7 @@ function LocalsManagement() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 [&>*]:min-w-0 [&>*]:flex-1 md:flex-nowrap md:[&>*]:flex-none">
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -242,7 +226,7 @@ function LocalsManagement() {
       {/* Locals table */}
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="mobile-cards w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -265,7 +249,11 @@ function LocalsManagement() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <img src={`${API_BASE_URL}${local.logo_url}`} />
+                        <SafeImage
+                          path={local.logo_url}
+                          alt={local.name}
+                          className="h-10 w-10 rounded-lg object-contain"
+                        />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">

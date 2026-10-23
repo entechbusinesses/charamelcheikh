@@ -11,6 +11,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import api from "@/apis/api";
+import { notifyError } from "@/lib/notify";
 import Title from "@/components/ui/Title";
 import Modal from "@/components/ui/Modal";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
@@ -89,7 +90,6 @@ export default function StockShifts() {
   const [statusFilter, setStatusFilter] = useState("tous");
   const [shifts, setShifts] = useState<StockShift[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [showStart, setShowStart] = useState(false);
   const [closing, setClosing] = useState<StockShift | null>(null);
@@ -112,9 +112,8 @@ export default function StockShifts() {
         params: { local_id: localFilter, status: statusFilter },
       });
       setShifts(res.data.data);
-      setError(null);
     } catch (err) {
-      setError(apiErrorMessage(err, "Échec du chargement des shifts de stock."));
+      notifyError(err, "Échec du chargement des shifts de stock.");
     } finally {
       setLoading(false);
     }
@@ -135,12 +134,12 @@ export default function StockShifts() {
       await api.delete(`/stock-shifts/${shift.id}`);
       fetchShifts(true);
     } catch (err) {
-      alert(apiErrorMessage(err, "Impossible de supprimer ce shift."));
+      notifyError(err, "Impossible de supprimer ce shift.");
     }
   };
 
   return (
-    <div className="px-6 space-y-5">
+    <div className="px-4 md:px-6 space-y-5">
       <Title
         Icon={Boxes}
         title="Shift stock Beldi"
@@ -180,15 +179,13 @@ export default function StockShifts() {
       <div className="bg-white rounded-lg shadow overflow-hidden">
         {loading ? (
           <LoadingSpinning />
-        ) : error ? (
-          <p className="p-6 text-center text-red-600">{error}</p>
         ) : shifts.length === 0 ? (
           <p className="p-10 text-center text-gray-500">
             Aucun shift de stock pour ces filtres.
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="mobile-cards w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
                   {[

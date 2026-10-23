@@ -1,4 +1,4 @@
-import api, { API_BASE_URL } from "@/apis/api";
+import api from "@/apis/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useShift } from "@/contexts/ShiftContext";
 import { cn } from "@/lib/utils";
@@ -19,10 +19,13 @@ import {
 } from "lucide-react";
 import { useReactToPrint } from "react-to-print";
 import { useEffect, useRef, useState } from "react";
-import placeholder from "/placeholder.png";
 import TikcetClient from "@/components/TicketClient";
 import PaymentModal, { type Payment } from "@/components/PaymentModal";
 import AmountModal from "@/components/AmountModal";
+import { Switch } from "@/components/ui/switch";
+import { notifyError } from "@/lib/notify";
+import SafeImage from "@/components/ui/SafeImage";
+import MarqueeText from "@/components/ui/MarqueeText";
 
 // Remembers (per browser) whether "Packs" is shown above "Vos Services"
 const PACKS_FIRST_KEY = "pos.packsFirst";
@@ -32,6 +35,18 @@ const readPacksFirst = () => {
     return localStorage.getItem(PACKS_FIRST_KEY) === "1";
   } catch {
     return false;
+  }
+};
+
+// Remembers (per browser) whether cash payments go through the change
+// calculator (bills received → rendu). On by default.
+const RENDU_KEY = "pos.rendu";
+
+const readRendu = () => {
+  try {
+    return localStorage.getItem(RENDU_KEY) !== "0";
+  } catch {
+    return true;
   }
 };
 
@@ -96,6 +111,7 @@ export default function Pos() {
   const [isPackSelected, setIsPackSelected] = useState<boolean>(false);
   const [packs, setPacks] = useState<Item[]>([]);
   const [packsFirst, setPacksFirst] = useState<boolean>(readPacksFirst);
+  const [rendu, setRendu] = useState<boolean>(readRendu);
   const [categories, setCategories] = useState<Category[]>([]);
   const [services, setServices] = useState<Item[]>([]);
   const [products, setProducts] = useState<Item[]>([]);
@@ -143,6 +159,15 @@ export default function Pos() {
       localStorage.setItem(PACKS_FIRST_KEY, next ? "1" : "0");
     } catch {
       // storage unavailable: the order just isn't remembered
+    }
+  };
+
+  const toggleRendu = (next: boolean) => {
+    setRendu(next);
+    try {
+      localStorage.setItem(RENDU_KEY, next ? "1" : "0");
+    } catch {
+      // storage unavailable: the choice just isn't remembered
     }
   };
 
@@ -768,17 +793,35 @@ export default function Pos() {
                 <span className="font-medium">Quantité:</span>
                 <span className="font-bold text-lg">{totalQ.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-3">
                 <span className="font-medium">Total:</span>
                 <span className="font-bold text-lg">
                   {totalPrice.toFixed(2)} DH
                 </span>
               </div>
+              <label className="flex items-center justify-between mb-4 cursor-pointer select-none text-sm text-gray-600">
+                <span>Calcul du rendu (espèces)</span>
+                <Switch checked={rendu} onCheckedChange={toggleRendu} />
+              </label>
               <button
                 className="w-full flex items-center justify-center gap-2 bg-main hover:bg-main-dark text-white py-3 rounded-lg font-medium transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                onClick={() => {
+                onClick={async () => {
                   setShowCart(false);
-                  setShowPayment(true);
+                  // BELDI is cash only: the modal is just the change calculator
+                  if (!isBeldi || rendu) {
+                    setShowPayment(true);
+                    return;
+                  }
+                  // BELDI without rendu: no payment modal at all
+                  try {
+                    await handleSubmitOrder({
+                      method: "CASH",
+                      cash: totalPrice,
+                      tpe: 0,
+                    });
+                  } catch (err) {
+                    notifyError(err, "Échec de l'enregistrement de la commande. Réessayez.");
+                  }
                 }}
                 disabled={isLoadingOrder || !shift.shift}
               >
@@ -806,6 +849,8 @@ export default function Pos() {
         total={totalPrice}
         onClose={() => setShowPayment(false)}
         onConfirm={handleSubmitOrder}
+        rendu={rendu}
+        cashOnly={isBeldi}
       />
 
       <AmountModal
@@ -878,15 +923,16 @@ function CategoryCard({
       )}
     >
       <div className="bg-gray-100 rounded-t-lg flex items-center justify-center">
-        <img
-          src={image_url ? `${API_BASE_URL}${image_url}` : placeholder}
+        <SafeImage
+          path={image_url}
           alt={name}
           className="object-contain h-20 w-full aspect-square rounded-t-lg"
         />
       </div>
-      <p className="bg-white border text-center text-xl py-1.5 truncate rounded-b-lg font-medium">
-        {name}
-      </p>
+      <MarqueeText
+        text={name}
+        className="bg-white border text-center text-xl py-1.5 rounded-b-lg font-medium"
+      />
     </section>
   );
 }
@@ -932,10 +978,8 @@ function ProductCard({
             )}
           </div>
         ) : (
-          <img
-            src={
-              item.image_url ? `${API_BASE_URL}${item.image_url}` : placeholder
-            }
+          <SafeImage
+            path={item.image_url}
             className="object-contain h-full w-full"
             alt={item.name}
           />
@@ -953,7 +997,7 @@ function ProductCard({
         )}
       </div>
       <div className="p-2 flex justify-between bg-white rounded-b-lg">
-        <p className="font-medium truncate">{item.name}</p>
+        <MarqueeText text={item.name} className="flex-1 font-medium" />
         <span className="font-bold bg-main text-white absolute bottom-10 px-2 rounded-tl-lg py-0.5 right-0 text-sm md:text-base">
           {openPrice ? "Montant libre" : `${item.price} DH`}
         </span>

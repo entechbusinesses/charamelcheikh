@@ -10,6 +10,7 @@ import packsRoutes from "../routes/packs.routes";
 import notificationsRoutes from "../routes/notifications.routes";
 import shiftRoutes from "../routes/shift.routes";
 import stockShiftRoutes from "../routes/stockShift.routes";
+import ticketRequestRoutes from "../routes/ticketRequest.routes";
 
 export const map = [
   {
@@ -59,5 +60,9 @@ export const map = [
   {
     path: "/stock-shifts",
     element: stockShiftRoutes,
+  },
+  {
+    path: "/ticket-requests",
+    element: ticketRequestRoutes,
   },
 ];

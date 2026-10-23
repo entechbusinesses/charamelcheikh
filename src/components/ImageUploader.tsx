@@ -1,6 +1,7 @@
 // components/ImageUploader.tsx
 import { useState, useCallback } from "react";
 import { UploadCloud, X } from "lucide-react";
+import { notifyError } from "@/lib/notify";
 
 interface ImageUploaderProps {
   onImageUpload: (file: File) => void;
@@ -16,7 +17,7 @@ const ImageUploader = ({ onImageUpload, initialImage }: ImageUploaderProps) => {
   const handleFileChange = useCallback(
     (file: File) => {
       if (!file.type.match("image.*")) {
-        alert("Please select an image file");
+        notifyError(null, "Veuillez choisir un fichier image valide.");
         return;
       }
 

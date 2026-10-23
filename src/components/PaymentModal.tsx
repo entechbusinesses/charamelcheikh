@@ -17,6 +17,8 @@ export interface Payment {
   method: PaymentMethod;
   cash: number;
   tpe: number;
+  /** cash handed by the client, when the change calculator was used */
+  received?: number;
 }
 
 interface PaymentModalProps {
@@ -25,7 +27,15 @@ interface PaymentModalProps {
   onClose: () => void;
   /** Saves the order; throw to show an error in the modal */
   onConfirm: (payment: Payment) => Promise<void>;
+  /** Cash goes through the change calculator (bills received → rendu) */
+  rendu?: boolean;
+  /** Cash is the only method (BELDI): opens straight on the calculator */
+  cashOnly?: boolean;
 }
+
+// Moroccan dirham bills and coins, as tapped in the change calculator
+const BILLS = [200, 100, 50, 20] as const;
+const COINS = [10, 5, 2, 1] as const;
 
 const LABELS: Record<PaymentMethod, string> = {
   CASH: "Espèces",
@@ -45,6 +55,7 @@ const EMPTY_MIX: MixState = { cash: "", tpe: "", active: "cash", fresh: true };
 
 const ARM_TIMEOUT = 3000; // ms to give the second click
 const SUCCESS_DELAY = 1700; // ms the success animation stays on screen
+const RENDU_DELAY = 4000; // same, when there is change to give back
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 const toNumber = (s: string) => (s === "" || s === "." ? 0 : parseFloat(s));
@@ -56,8 +67,12 @@ export default function PaymentModal({
   total,
   onClose,
   onConfirm,
+  rendu = false,
+  cashOnly = false,
 }: PaymentModalProps) {
-  const [view, setView] = useState<"choose" | "mixte">("choose");
+  const [view, setView] = useState<"choose" | "mixte" | "cash">("choose");
+  // Change calculator: every bill / coin tapped, in order (for undo)
+  const [taps, setTaps] = useState<number[]>([]);
   const [armed, setArmed] = useState<"CASH" | "TPE" | null>(null);
   const [submitting, setSubmitting] = useState<PaymentMethod | null>(null);
   const [done, setDone] = useState<Payment | null>(null);
@@ -82,7 +97,8 @@ export default function PaymentModal({
   // Reset everything each time the modal opens
   useEffect(() => {
     if (!open) return;
-    setView("choose");
+    setView(cashOnly ? "cash" : "choose");
+    setTaps([]);
     setArmed(null);
     setSubmitting(null);
     setDone(null);
@@ -103,7 +119,9 @@ export default function PaymentModal({
     try {
       await onConfirm(payment);
       setDone(payment);
-      window.setTimeout(onClose, SUCCESS_DELAY);
+      // leave the change on screen long enough to count it out
+      const giveBack = (payment.received ?? 0) - payment.cash > 0.005;
+      window.setTimeout(onClose, giveBack ? RENDU_DELAY : SUCCESS_DELAY);
     } catch {
       submittingRef.current = false;
       setError("Échec de l'enregistrement de la commande. Réessayez.");
@@ -127,6 +145,16 @@ export default function PaymentModal({
     }
     setArmed(method);
     armTimer.current = window.setTimeout(() => setArmed(null), ARM_TIMEOUT);
+  };
+
+  // ---------- Cash with change calculator ----------
+  const received = round2(taps.reduce((sum, v) => sum + v, 0));
+  const change = round2(received - total);
+  const cashValid = received > 0 && change > -0.005;
+
+  const confirmCash = (amount = received) => {
+    if (amount <= 0 || round2(amount - total) < -0.005) return;
+    confirm({ method: "CASH", cash: total, tpe: 0, received: amount });
   };
 
   // ---------- Mixed payment ----------
@@ -177,6 +205,13 @@ export default function PaymentModal({
   // Physical keyboard support for the mixed view
   const keyHandler = useRef<(e: KeyboardEvent) => void>(() => {});
   keyHandler.current = (e: KeyboardEvent) => {
+    if (view === "cash") {
+      if (e.key === "Enter") confirmCash();
+      else if (e.key === "Backspace") setTaps((t) => t.slice(0, -1));
+      else return;
+      e.preventDefault();
+      return;
+    }
     if (/^[0-9]$/.test(e.key)) pressKey(e.key);
     else if (e.key === "." || e.key === ",") pressKey(".");
     else if (e.key === "Backspace") pressKey("⌫");
@@ -188,7 +223,7 @@ export default function PaymentModal({
     e.preventDefault();
   };
   useEffect(() => {
-    if (!open || view !== "mixte" || busy) return;
+    if (!open || view === "choose" || busy) return;
     const onKey = (e: KeyboardEvent) => keyHandler.current(e);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -201,7 +236,13 @@ export default function PaymentModal({
       onClose={onClose}
       closeDisabled={busy}
       size="lg"
-      title={done ? "Paiement confirmé" : "Mode de paiement"}
+      title={
+        done
+          ? "Paiement confirmé"
+          : view === "cash"
+            ? "Paiement en espèces"
+            : "Mode de paiement"
+      }
       description={
         done ? undefined : (
           <>
@@ -221,12 +262,17 @@ export default function PaymentModal({
             <MethodCard
               icon={Banknote}
               label={LABELS.CASH}
-              hint="Double-clic pour confirmer"
+              hint={rendu ? "Calcul du rendu" : "Double-clic pour confirmer"}
               color="emerald"
               armed={armed === "CASH"}
               loading={submitting === "CASH"}
               disabled={busy}
-              onClick={() => handleQuickPay("CASH")}
+              onClick={() => {
+                if (!rendu) return handleQuickPay("CASH");
+                setArmed(null);
+                setTaps([]);
+                setView("cash");
+              }}
             />
             <MethodCard
               icon={CreditCard}
@@ -252,6 +298,124 @@ export default function PaymentModal({
             />
           </div>
           {error && <ErrorBox message={error} />}
+        </div>
+      ) : view === "cash" ? (
+        <div className="grid gap-6 md:grid-cols-[1fr_minmax(0,18rem)]">
+          {/* Left: bills and coins received */}
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              Touchez les billets et pièces reçus du client.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {BILLS.map((value) => (
+                <Bill
+                  key={value}
+                  value={value}
+                  count={taps.filter((v) => v === value).length}
+                  disabled={busy}
+                  onClick={() => setTaps((t) => [...t, value])}
+                />
+              ))}
+            </div>
+            <div className="grid grid-cols-4 gap-3">
+              {COINS.map((value) => (
+                <Coin
+                  key={value}
+                  value={value}
+                  count={taps.filter((v) => v === value).length}
+                  disabled={busy}
+                  onClick={() => setTaps((t) => [...t, value])}
+                />
+              ))}
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                disabled={busy || taps.length === 0}
+                onClick={() => setTaps((t) => t.slice(0, -1))}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                <Delete className="size-5" /> Annuler le dernier
+              </button>
+              <button
+                type="button"
+                disabled={busy || taps.length === 0}
+                onClick={() => setTaps([])}
+                className="flex-1 rounded-xl bg-gray-100 px-4 py-2.5 font-medium text-gray-600 hover:bg-gray-200 disabled:opacity-50"
+              >
+                Effacer
+              </button>
+            </div>
+          </div>
+
+          {/* Right: what is due back */}
+          <div className="flex flex-col gap-4">
+            <div className="rounded-xl bg-gray-50 p-4 space-y-1.5 text-sm">
+              <Row label="Total" value={`${total.toFixed(2)} DH`} />
+              <Row label="Reçu" value={`${received.toFixed(2)} DH`} />
+            </div>
+            <div
+              className={cn(
+                "rounded-2xl border-2 p-5 text-center",
+                change > -0.005
+                  ? "border-emerald-500 bg-emerald-50"
+                  : "border-red-300 bg-red-50"
+              )}
+            >
+              <p
+                className={cn(
+                  "text-sm font-semibold uppercase tracking-wide",
+                  change > -0.005 ? "text-emerald-700" : "text-red-700"
+                )}
+              >
+                {change > -0.005 ? "Rendu à donner" : "Manque"}
+              </p>
+              <p
+                className={cn(
+                  "mt-1 text-4xl font-bold",
+                  change > -0.005 ? "text-emerald-700" : "text-red-700"
+                )}
+              >
+                {Math.abs(change).toFixed(2)} DH
+              </p>
+            </div>
+
+            {error && <ErrorBox message={error} />}
+
+            <div className="mt-auto flex flex-col gap-3">
+              <button
+                type="button"
+                disabled={!cashValid || busy}
+                onClick={() => confirmCash()}
+                className="flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-gray-300"
+              >
+                {submitting === "CASH" ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : (
+                  <Banknote className="size-5" />
+                )}
+                Confirmer le paiement
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => confirmCash(total)}
+                className="rounded-xl border border-emerald-600 px-4 py-2.5 font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50"
+              >
+                Montant exact (pas de rendu)
+              </button>
+              {!cashOnly && (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setView("choose")}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                >
+                  <ArrowLeft className="size-5" /> Retour
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2">
@@ -526,7 +690,102 @@ function SuccessView({ payment }: { payment: Payment }) {
             ? `Espèces ${payment.cash.toFixed(2)} DH + TPE ${payment.tpe.toFixed(2)} DH`
             : `${(payment.cash + payment.tpe).toFixed(2)} DH`}
         </p>
+        {payment.received !== undefined && (
+          <p className="pt-2 text-xl font-bold text-emerald-700">
+            Reçu {payment.received.toFixed(2)} DH · Rendu{" "}
+            {Math.max(0, payment.received - payment.cash).toFixed(2)} DH
+          </p>
+        )}
       </div>
     </div>
+  );
+}
+
+// Dirham bill colors, close to the real notes
+const BILL_STYLES: Record<(typeof BILLS)[number], string> = {
+  200: "from-sky-500 to-blue-700 border-blue-800",
+  100: "from-amber-400 to-orange-700 border-orange-800",
+  50: "from-lime-500 to-green-700 border-green-800",
+  20: "from-fuchsia-400 to-purple-700 border-purple-800",
+};
+
+function TapCount({ count }: { count: number }) {
+  if (count === 0) return null;
+  return (
+    <span className="absolute -right-2 -top-2 flex size-7 items-center justify-center rounded-full bg-gray-900 text-sm font-bold text-white shadow ring-2 ring-white">
+      ×{count}
+    </span>
+  );
+}
+
+function Bill({
+  value,
+  count,
+  disabled,
+  onClick,
+}: {
+  value: (typeof BILLS)[number];
+  count: number;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={cn(
+        "relative flex aspect-[2/1] select-none items-stretch rounded-lg border-2 bg-gradient-to-br p-1.5 text-white shadow-md transition active:scale-95 hover:shadow-lg disabled:opacity-50",
+        BILL_STYLES[value]
+      )}
+    >
+      <span className="flex flex-1 items-center justify-between rounded border border-white/40 px-3">
+        <span className="flex size-10 items-center justify-center rounded-full border-2 border-white/60 text-xs font-bold">
+          DH
+        </span>
+        <span className="text-right leading-none">
+          <span className="block text-3xl font-black drop-shadow">{value}</span>
+          <span className="text-[10px] font-semibold uppercase tracking-widest opacity-90">
+            Dirhams
+          </span>
+        </span>
+      </span>
+      <TapCount count={count} />
+    </button>
+  );
+}
+
+function Coin({
+  value,
+  count,
+  disabled,
+  onClick,
+}: {
+  value: (typeof COINS)[number];
+  count: number;
+  disabled?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className="relative mx-auto flex aspect-square w-full max-w-20 select-none items-center justify-center rounded-full transition active:scale-95 disabled:opacity-50"
+    >
+      <span
+        className={cn(
+          "flex size-full flex-col items-center justify-center rounded-full border-4 shadow-md",
+          // 10 DH is bimetallic (gold ring, silver center)
+          value === 10
+            ? "border-yellow-500 bg-gray-200 text-gray-800"
+            : "border-gray-400 bg-gradient-to-br from-gray-100 to-gray-300 text-gray-800"
+        )}
+      >
+        <span className="text-2xl font-black leading-none">{value}</span>
+        <span className="text-[10px] font-semibold">DH</span>
+      </span>
+      <TapCount count={count} />
+    </button>
   );
 }

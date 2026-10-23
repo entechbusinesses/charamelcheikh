@@ -5,6 +5,7 @@ import session from "express-session";
 import cors from "cors";
 import { map } from "./data/data";
 import path from "path";
+import fs from "fs";
 import PrismaSessionStore from "./prismaSessionStore";
 
 const app: Application = express();
@@ -41,7 +42,13 @@ map.forEach((value) => {
   app.use(`/api${value.path}`, value.element);
 });
 
-app.use("/api/uploads", express.static(path.join(__dirname, "../uploads")));
+// Multer saves files to "./uploads/..." relative to the working directory, so
+// serve them from the same place (server/ in dev, the app root on Hostinger)
+const uploadsDir = path.resolve("uploads");
+["categories", "locals_logo", "products", "services"].forEach((dir) =>
+  fs.mkdirSync(path.join(uploadsDir, dir), { recursive: true })
+);
+app.use("/api/uploads", express.static(uploadsDir));
 
 app.use(express.static(path.join(__dirname, "../client")));
 

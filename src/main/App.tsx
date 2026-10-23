@@ -1,6 +1,8 @@
 import { Toaster } from "@/components/ui/toaster";
+import TableCardLabels from "@/components/TableCardLabels";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ShiftProvider } from "@/contexts/ShiftContext";
+import { TicketRequestsProvider } from "@/components/ticketRequests/TicketRequestsProvider";
 // import { AuthProvider } from "@/contexts/AuthContext";
 import Router from "@/routes/router";
 import { useEffect } from "react";
@@ -15,10 +17,13 @@ export default function App() {
     <div className="font-poppins">
       <AuthProvider>
         <ShiftProvider>
-          <Router />
+          <TicketRequestsProvider>
+            <Router />
+          </TicketRequestsProvider>
         </ShiftProvider>
       </AuthProvider>
       <Toaster />
+      <TableCardLabels />
     </div>
   );
 }

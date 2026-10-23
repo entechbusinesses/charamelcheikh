@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { CheckCircle2Icon, Loader2, PrinterIcon } from "lucide-react";
+import {
+  CheckCircle2Icon,
+  Loader2,
+  PrinterIcon,
+  TicketIcon,
+} from "lucide-react";
 import Modal from "@/components/ui/Modal";
+import ShiftTicketsModal from "@/components/ticketRequests/ShiftTicketsModal";
 import type { Shift } from "@/contexts/ShiftContext";
 import { apiErrorMessage, formatDH, formatDuration } from "./utils";
 
@@ -28,9 +34,11 @@ export default function CloseShiftModal({
 }: CloseShiftModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showTickets, setShowTickets] = useState(false);
 
   useEffect(() => {
     if (open) setError(null);
+    else setShowTickets(false);
   }, [open]);
 
   const handleConfirm = async () => {
@@ -106,9 +114,25 @@ export default function CloseShiftModal({
 
           <ShiftDetails shift={shown} />
 
+          {shown.summary.count > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowTickets(true)}
+              className="flex items-center justify-center gap-2 self-start rounded-lg border bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+            >
+              <TicketIcon className="size-4" />
+              Voir les tickets ({shown.summary.count})
+            </button>
+          )}
+
           {error && <p className="text-sm text-red-600">{error}</p>}
         </div>
       )}
+
+      <ShiftTicketsModal
+        shiftId={showTickets && shown ? shown.id : null}
+        onClose={() => setShowTickets(false)}
+      />
     </Modal>
   );
 }

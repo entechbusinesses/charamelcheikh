@@ -203,6 +203,37 @@ export const notifySaleDeleted = (
     url: "/tickets",
   });
 
+/** A cashier asks to delete / edit a ticket: the admin validates it in the app */
+export const notifyTicketRequest = (requestId: number) =>
+  background(async () => {
+    const r = await prisma.ticketRequest.findUnique({
+      where: { id: requestId },
+      include: {
+        user: { select: { name: true } },
+        sale: { select: { local: { select: { name: true } } } },
+      },
+    });
+    if (!r) return;
+
+    const changes = (r.changes ?? []) as { name: string; from: number; to: number }[];
+    const changesText = changes
+      .map((c) => (c.to === 0 ? `retirer ${c.name}` : `${c.name} ${c.from} → ${c.to}`))
+      .join(", ");
+
+    notify({
+      title: `${r.type === "DELETE" ? "🗑️ Demande de suppression" : "✏️ Demande de modification"}${
+        r.sale ? ` · ${r.sale.local.name}` : ""
+      }`,
+      body:
+        `Ticket #${r.ticket_id} de ${dh(r.ticket_total)} · ${r.user.name}` +
+        (changesText ? `\n${changesText}` : "") +
+        (r.reason ? `\nMotif : ${r.reason}` : "") +
+        `\nÀ valider dans l'application`,
+      url: "/",
+      tag: `ticket-request-${r.id}`,
+    });
+  });
+
 // ─── Stock ───────────────────────────────────────────────────────────────
 
 export const notifyReception = (receptionId: number, productsCount: number) =>

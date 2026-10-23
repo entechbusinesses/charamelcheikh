@@ -1,4 +1,3 @@
-import { API_BASE_URL } from "@/apis/api";
 import {
   CardContent,
   CardFooter,
@@ -11,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Item, keptQuantity } from "@/pages/Pos";
+import SafeImage from "@/components/ui/SafeImage";
 
 interface GymPaymentTicketProps {
   paidAmount: number;
@@ -37,9 +37,10 @@ export default function TikcetClient({
   return (
     <div className="w-[88mm] bg-white text-black">
       <CardHeader className="text-center">
-        <img
-          src={`${API_BASE_URL}${user?.local?.logo_url}`}
-          className=" mb-5 h-20 object-contain rounded-md w-max mx-auto filter grayscale contrast-200"
+        <SafeImage
+          path={user?.local?.logo_url}
+          className="mb-5 h-20 object-contain rounded-md w-max mx-auto filter grayscale contrast-200"
+          fallback={null}
         />
         <div
           className={cn(

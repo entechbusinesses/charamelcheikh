@@ -12,9 +12,11 @@ import {
   List,
   Grid,
 } from "lucide-react";
-import api, { API_BASE_URL } from "@/apis/api";
+import api from "@/apis/api";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
 import Modal from "@/components/ui/Modal";
+import { notifyError } from "@/lib/notify";
+import SafeImage from "@/components/ui/SafeImage";
 
 interface Category {
   id: number;
@@ -105,7 +107,7 @@ function ProductsManagement() {
     const file = event.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Please upload a valid image file.");
+        notifyError(null, "Veuillez choisir un fichier image valide.");
         return;
       }
       setProductFormData({ ...productFormData, pic: file });
@@ -118,7 +120,7 @@ function ProductsManagement() {
     const file = event.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Please upload a valid image file.");
+        notifyError(null, "Veuillez choisir un fichier image valide.");
         return;
       }
       setCategoryFormData({ ...categoryFormData, pic: file });
@@ -216,8 +218,7 @@ function ProductsManagement() {
       await fetchProducts(selectedCategory?.id);
       resetProductForm();
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
-      alert("Erreur lors de la sauvegarde du produit");
+      notifyError(error, "Erreur lors de la sauvegarde du produit");
     }
   };
 
@@ -256,8 +257,7 @@ function ProductsManagement() {
       await fetchCategories();
       resetCategoryForm();
     } catch (error) {
-      console.error("Erreur lors de l'ajout de la catégorie:", error);
-      alert("Erreur lors de l'ajout de la catégorie");
+      notifyError(error, "Erreur lors de l'ajout de la catégorie");
     }
   };
 
@@ -307,8 +307,7 @@ function ProductsManagement() {
         await api.put(`/products/toggleHide/${id}`);
         await fetchProducts(selectedCategory?.id);
       } catch (error) {
-        console.error("Erreur lors de la suppression:", error);
-        alert("Erreur lors de la suppression du produit");
+        notifyError(error, "Erreur lors de la suppression du produit");
       }
     }
   };
@@ -325,8 +324,7 @@ function ProductsManagement() {
           setViewMode("categories");
         }
       } catch (error) {
-        console.error("Erreur lors de la suppression:", error);
-        alert("Erreur lors de la suppression de la catégorie");
+        notifyError(error, "Erreur lors de la suppression de la catégorie");
       }
     }
   };
@@ -339,8 +337,7 @@ function ProductsManagement() {
       await api.put(`/products/toggleHide/${id}`, { hidden: !product.hidden });
       await fetchProducts(selectedCategory?.id);
     } catch (error) {
-      console.error("Erreur lors du changement de visibilité:", error);
-      alert("Erreur lors du changement de visibilité");
+      notifyError(error, "Erreur lors du changement de visibilité");
     }
   };
 
@@ -368,7 +365,7 @@ function ProductsManagement() {
   };
 
   return (
-    <div className="px-6 space-y-5 mt-5">
+    <div className="px-4 md:px-6 space-y-5 mt-5">
       {/* En-tête */}
       <div className="bg-white rounded-lg">
         <div className="flex flex-col gap-3 md:flex-row items-center justify-between">
@@ -393,7 +390,7 @@ function ProductsManagement() {
               </p>
             </div>
           </div>
-          <div className="flex gap-3">
+          <div className="flex w-full flex-wrap gap-3 md:w-auto [&>*]:flex-1 [&>*]:justify-center md:[&>*]:flex-none">
             {viewMode === "products" && (
               <button
                 onClick={handleBackToCategories}
@@ -470,7 +467,7 @@ function ProductsManagement() {
       <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
         <div className="overflow-x-auto">
           {viewMode === "categories" ? (
-            <table className="w-full">
+            <table className="mobile-cards w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -498,17 +495,16 @@ function ProductsManagement() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
-                            {!category.image_url ? (
-                              <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                                <Folder className="w-5 h-5 text-white" />
-                              </div>
-                            ) : (
-                              <div className="h-10 w-10 object-contain rounded-lg bg-blue-600 flex items-center justify-center">
-                                <img
-                                  src={`${API_BASE_URL}${category.image_url}`}
-                                />
-                              </div>
-                            )}
+                            <SafeImage
+                              path={category.image_url}
+                              alt={category.name}
+                              className="h-10 w-10 rounded-lg object-contain"
+                              fallback={
+                                <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                                  <Folder className="w-5 h-5 text-white" />
+                                </div>
+                              }
+                            />
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
@@ -549,7 +545,7 @@ function ProductsManagement() {
               </tbody>
             </table>
           ) : (
-            <table className="w-full">
+            <table className="mobile-cards w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -575,17 +571,16 @@ function ProductsManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="flex-shrink-0 h-10 w-10">
-                          {!product.image_url ? (
-                            <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                              <Package className="w-5 h-5 text-white" />
-                            </div>
-                          ) : (
-                            <div className="h-10 w-10 object-contain rounded-lg bg-blue-600 flex items-center justify-center">
-                              <img
-                                src={`${API_BASE_URL}${product.image_url}`}
-                              />
-                            </div>
-                          )}
+                          <SafeImage
+                            path={product.image_url}
+                            alt={product.name}
+                            className="h-10 w-10 rounded-lg object-contain"
+                            fallback={
+                              <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                                <Package className="w-5 h-5 text-white" />
+                              </div>
+                            }
+                          />
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">

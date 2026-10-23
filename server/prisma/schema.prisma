@@ -8,20 +8,22 @@ datasource db {
 }
 
 model User {
-  id          Int             @id @default(autoincrement())
-  name        String
-  password    String          @unique
-  role        Role            @default(CAISSIER)
-  createdAt   DateTime        @default(now())
-  local_id    Int?
-  banned      Boolean         @default(false)
-  local       Locals?         @relation(fields: [local_id], references: [id])
-  sales       Sales[]
-  receptions  ReceptionList[]
-  totals      TotalDay[]
-  shifts      Shift[]
-  pushTokens  PushToken[]
-  stockShifts StockShift[]
+  id             Int             @id @default(autoincrement())
+  name           String
+  password       String          @unique
+  role           Role            @default(CAISSIER)
+  createdAt      DateTime        @default(now())
+  local_id       Int?
+  banned         Boolean         @default(false)
+  local          Locals?         @relation(fields: [local_id], references: [id])
+  sales          Sales[]
+  receptions     ReceptionList[]
+  totals         TotalDay[]
+  shifts         Shift[]
+  pushTokens     PushToken[]
+  stockShifts    StockShift[]
+  ticketRequests TicketRequest[] @relation("requestedBy")
+  ticketReviews  TicketRequest[] @relation("reviewedBy")
 
   @@map("users")
 }
@@ -175,6 +177,7 @@ model Sales {
   paid_tpe       Float           @default(0)
   shift_id       Int?
   shift          Shift?          @relation(fields: [shift_id], references: [id])
+  requests       TicketRequest[]
 
   @@map("sales")
 }
@@ -225,6 +228,42 @@ model StockShift {
   note            String?   @db.VarChar(500)
 
   @@map("stock_shifts")
+}
+
+// A cashier's request to delete or edit one of their tickets, validated by an admin
+model TicketRequest {
+  id           Int                 @id @default(autoincrement())
+  // null once the ticket is deleted; ticket_id / ticket_total stay for the history
+  sale_id      Int?
+  sale         Sales?              @relation(fields: [sale_id], references: [id], onDelete: SetNull)
+  ticket_id    Int
+  ticket_total Int
+  type         TicketRequestType
+  // EDIT only: [{ type: "product" | "service", id, name, price, from, to }]
+  // (line id, quantity before / requested; to = 0 removes the line)
+  changes      Json?
+  reason       String?             @db.VarChar(500)
+  status       TicketRequestStatus @default(PENDING)
+  user_id      Int
+  user         User                @relation("requestedBy", fields: [user_id], references: [id])
+  reviewer_id  Int?
+  reviewer     User?               @relation("reviewedBy", fields: [reviewer_id], references: [id])
+  created_at   DateTime            @default(now())
+  reviewed_at  DateTime?
+
+  @@index([status])
+  @@map("ticket_requests")
+}
+
+enum TicketRequestType {
+  DELETE
+  EDIT
+}
+
+enum TicketRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum PaymentMethod {

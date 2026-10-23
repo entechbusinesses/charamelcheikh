@@ -15,6 +15,7 @@ import {
 import api from "@/apis/api";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
 import Modal from "@/components/ui/Modal";
+import { notifyError } from "@/lib/notify";
 
 type PDVTypes = "BELDI" | "TURKI";
 
@@ -253,11 +254,7 @@ function PacksManagement() {
       await fetchPacks();
       resetForm();
     } catch (error: any) {
-      console.error("Erreur lors de la sauvegarde:", error);
-      alert(
-        error?.response?.data?.message ||
-          "Erreur lors de la sauvegarde du pack",
-      );
+      notifyError(error, "Erreur lors de la sauvegarde du pack");
     } finally {
       setSaving(false);
     }
@@ -269,8 +266,7 @@ function PacksManagement() {
       await api.delete(`/packs/delete/${id}`);
       await fetchPacks();
     } catch (error) {
-      console.error("Erreur lors de la suppression:", error);
-      alert("Erreur lors de la suppression du pack");
+      notifyError(error, "Erreur lors de la suppression du pack");
     }
   };
 
@@ -279,8 +275,7 @@ function PacksManagement() {
       await api.put(`/packs/toggleHide/${pack.id}`, { hidden: !pack.hidden });
       await fetchPacks();
     } catch (error) {
-      console.error("Erreur lors du changement de visibilité:", error);
-      alert("Erreur lors du changement de visibilité");
+      notifyError(error, "Erreur lors du changement de visibilité");
     }
   };
 
@@ -289,7 +284,7 @@ function PacksManagement() {
   return (
     <div>
       {/* En-tête */}
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <div className="flex flex-col gap-3 md:flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-blue-600 p-2 rounded-lg">
@@ -315,7 +310,7 @@ function PacksManagement() {
       </div>
 
       {/* Recherche */}
-      <div className="px-6 mb-6">
+      <div className="px-4 md:px-6 mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
           <input
@@ -329,9 +324,9 @@ function PacksManagement() {
       </div>
 
       {/* Tableau des packs */}
-      <div className="rounded-lg mx-6 border overflow-hidden">
+      <div className="rounded-lg mx-4 md:mx-6 border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="mobile-cards w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 {[

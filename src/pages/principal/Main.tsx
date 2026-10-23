@@ -17,7 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "@/apis/api";
+import SafeImage from "@/components/ui/SafeImage";
 
 interface PageLink {
   path: string;
@@ -174,10 +174,11 @@ export default function Main() {
       {/* Logo du local de l'utilisateur (masqué si aucun local / logo) */}
       {user?.local?.logo_url && (
         <div className="flex justify-center pt-4 md:pt-0">
-          <img
-            src={`${API_BASE_URL}${user.local.logo_url}`}
+          <SafeImage
+            path={user.local.logo_url}
             alt={user.local.name}
             className="h-24 md:h-32 w-auto object-contain"
+            fallback={null}
           />
         </div>
       )}

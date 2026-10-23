@@ -12,9 +12,11 @@ import {
   Building2,
   Tag,
 } from "lucide-react";
-import api, { API_BASE_URL } from "@/apis/api";
+import api from "@/apis/api";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
 import Modal from "@/components/ui/Modal";
+import { notifyError } from "@/lib/notify";
+import SafeImage from "@/components/ui/SafeImage";
 
 type PDVTypes = "BELDI" | "TURKI";
 
@@ -165,8 +167,7 @@ function ServicesManagement() {
 
       resetForm();
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
-      alert("Erreur lors de la sauvegarde du service");
+      notifyError(error, "Erreur lors de la sauvegarde du service");
     }
   };
 
@@ -200,7 +201,7 @@ function ServicesManagement() {
     const file = event.target.files?.[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        alert("Please upload a valid image file.");
+        notifyError(null, "Veuillez choisir un fichier image valide.");
         return;
       }
       setFormData({ ...formData, pic: file });
@@ -214,8 +215,7 @@ function ServicesManagement() {
 
         await fetchServices();
       } catch (error) {
-        console.error("Erreur lors de la suppression:", error);
-        alert("Erreur lors de la suppression du service");
+        notifyError(error, "Erreur lors de la suppression du service");
       }
     }
   };
@@ -231,8 +231,7 @@ function ServicesManagement() {
 
       await fetchServices();
     } catch (error) {
-      console.error("Erreur lors du changement de visibilité:", error);
-      alert("Erreur lors du changement de visibilité");
+      notifyError(error, "Erreur lors du changement de visibilité");
     }
   };
 
@@ -284,7 +283,7 @@ function ServicesManagement() {
   return (
     <div>
       {/* En-tête */}
-      <div className="p-6">
+      <div className="p-4 md:p-6">
         <div className="flex flex-col gap-3 md:flex-row items-center justify-between">
           <div className="flex  items-center gap-3">
             <div className="bg-blue-600 p-2 rounded-lg">
@@ -310,7 +309,7 @@ function ServicesManagement() {
       </div>
 
       {/* Filtres et recherche */}
-      <div className="px-6 mb-6">
+      <div className="px-4 md:px-6 mb-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
@@ -345,9 +344,9 @@ function ServicesManagement() {
       </div>
 
       {/* Tableau des services */}
-      <div className="rounded-lg mx-6 border overflow-hidden">
+      <div className="rounded-lg mx-4 md:mx-6 border overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="mobile-cards w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -379,15 +378,16 @@ function ServicesManagement() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        {!service.image_url ? (
-                          <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                            <Tag className="w-5 h-5 text-white" />
-                          </div>
-                        ) : (
-                          <div className="h-10 w-10 object-contain rounded-lg bg-blue-600 flex items-center justify-center">
-                            <img src={`${API_BASE_URL}${service.image_url}`} />
-                          </div>
-                        )}
+                        <SafeImage
+                          path={service.image_url}
+                          alt={service.name}
+                          className="h-10 w-10 rounded-lg object-contain"
+                          fallback={
+                            <div className="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center">
+                              <Tag className="w-5 h-5 text-white" />
+                            </div>
+                          }
+                        />
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">

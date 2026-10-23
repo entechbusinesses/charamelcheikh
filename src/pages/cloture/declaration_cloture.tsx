@@ -1,6 +1,7 @@
 "use client";
 
 import api from "@/apis/api";
+import { notifyError } from "@/lib/notify";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { Local } from "../structure/Products";
@@ -21,7 +22,6 @@ interface TotalDayProps {
 export default function TotalDay() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<TotalDayProps | null>(null);
-  const [error, setError] = useState("");
   const { user } = useAuth();
   const localId = user?.local?.id;
   const navigate = useNavigate();
@@ -45,13 +45,9 @@ export default function TotalDay() {
       );
       setData(response.data.data);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError(
-        "Échec du chargement des données. Veuillez réessayer plus tard."
-      );
+      notifyError(err, "Échec du chargement des données.");
     } finally {
       setLoading(false);
-      setError("");
     }
   };
 
@@ -71,14 +67,10 @@ export default function TotalDay() {
         total_services: totalDay.total_services,
       });
     } catch (err) {
-      console.error("Error adding total day:", err);
-      setError(
-        "Échec de l'ajout du total journalier. Veuillez réessayer plus tard."
-      );
+      notifyError(err, "Échec de l'ajout du total journalier.");
     } finally {
       fetchData();
       setLoading(false);
-      setError("");
     }
   };
 
@@ -105,30 +97,6 @@ export default function TotalDay() {
         btnText="Voir les Totaux Journaliers"
         btnIcon={ListIcon}
       />
-
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6 bg-red-50 border border-red-200 p-4 rounded-lg">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-red-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-red-700 font-medium">{error}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {data ? (
         /* Display Existing Data */
@@ -363,7 +331,7 @@ export default function TotalDay() {
               <h3 className="text-lg font-semibold text-gray-800 mb-3">
                 Aperçu du Résumé
               </h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="grid grid-cols-1 gap-4 text-center sm:grid-cols-3">
                 <div>
                   <p className="text-sm text-gray-600">Chiffre d'Affaires</p>
                   <p className="text-xl font-semibold text-gray-800">

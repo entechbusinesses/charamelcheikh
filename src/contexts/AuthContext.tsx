@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
+import { isAxiosError } from "axios";
 import api from "@/apis/api";
 import { disablePushNotifications } from "@/lib/pushNotifications";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
@@ -16,6 +17,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   user?: User;
   checkSession: () => Promise<void>;
+  /** Reloads the user (name, role, local) without the full-screen loader */
+  refreshUser: () => Promise<void>;
   token?: string;
   login: (password: string) => Promise<void>;
   logout: () => void;
@@ -61,6 +64,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const response = await api.post(`/auth/check`, {});
+      // same data: keep the same object so pages don't refetch for nothing
+      if (response.data) {
+        setUser((prev) =>
+          JSON.stringify(prev) === JSON.stringify(response.data)
+            ? prev
+            : response.data
+        );
+      }
+    } catch (error) {
+      // session ended or user banned: back to login; offline: keep what we have
+      if (isAxiosError(error) && error.response?.status === 401) {
+        setIsAuthenticated(false);
+        setUser(undefined);
+      }
+    }
+  };
+
   const login = async (password: string) => {
     // No global loading here: it would unmount the login page and lose its error state
     try {
@@ -99,12 +122,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     checkSession();
   }, []);
 
+  // Pick up changes an admin made to this user (local, role, name) while the
+  // app is open: when it comes back to the foreground, and every minute.
+  const loggedIn = !!user;
+  useEffect(() => {
+    if (!loggedIn) return;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refreshUser();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    const timer = window.setInterval(onVisible, 60_000);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+      window.clearInterval(timer);
+    };
+  }, [loggedIn]);
+
   const value: AuthContextType = {
     isAuthenticated,
     user,
     login,
     logout,
     checkSession,
+    refreshUser,
   };
 
   if (loading) {

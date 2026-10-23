@@ -340,3 +340,224 @@ export const listShifts = async (
     res.status(500).json({ message: "Failed to list shifts", error });
   }
 };
+
+/**
+ * Read-only detail of a shift: its totals and every ticket with its lines.
+ * Cashiers can only open their own shifts.
+ */
+export const getShiftSales = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sessionUser = req.session.user;
+  if (!sessionUser) {
+    res.status(401).json({ message: "Session expirée" });
+    return;
+  }
+
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    res.status(400).json({ message: "Shift invalide" });
+    return;
+  }
+
+  try {
+    const shift = await prisma.shift.findUnique({
+      where: { id },
+      include: shiftInclude,
+    });
+    if (!shift) {
+      res.status(404).json({ message: "Shift introuvable" });
+      return;
+    }
+
+    if (shift.user_id !== sessionUser.id && sessionUser.role !== "ADMIN") {
+      res.status(403).json({ message: "Ce shift n'est pas le vôtre" });
+      return;
+    }
+
+    const sales = await prisma.sales.findMany({
+      where: { shift_id: shift.id },
+      include: {
+        products: {
+          select: {
+            id: true,
+            price: true,
+            quantity: true,
+            pack_name: true,
+            product: { select: { name: true } },
+          },
+        },
+        services: {
+          select: {
+            id: true,
+            price: true,
+            quantity: true,
+            frais: true,
+            pack_name: true,
+            service: { select: { name: true } },
+          },
+        },
+      },
+      orderBy: { date: "asc" },
+    });
+
+    // latest delete / edit request of each ticket (newest first: first one wins)
+    const requests = await prisma.ticketRequest.findMany({
+      where: { sale_id: { in: sales.map((s) => s.id) } },
+      select: { id: true, sale_id: true, type: true, status: true },
+      orderBy: { created_at: "desc" },
+    });
+    const lastRequest = new Map<number, (typeof requests)[number]>();
+    requests.forEach((r) => {
+      if (!lastRequest.has(r.sale_id!)) lastRequest.set(r.sale_id!, r);
+    });
+
+    res.json({
+      data: {
+        shift: await withSummary(shift),
+        sales: sales.map((sale) => {
+          const amounts = saleAmounts(sale);
+          const request = lastRequest.get(sale.id);
+          return {
+            id: sale.id,
+            date: sale.date,
+            total: sale.total,
+            payment_method: sale.payment_method,
+            cash: round2(amounts.cash),
+            tpe: round2(amounts.tpe),
+            request: request
+              ? { id: request.id, type: request.type, status: request.status }
+              : null,
+            lines: [
+              ...sale.services.map((line) => ({
+                id: `s${line.id}`,
+                type: "service" as const,
+                name: line.service.name,
+                price: line.price,
+                quantity: line.quantity,
+                frais: line.frais,
+                pack_name: line.pack_name,
+              })),
+              ...sale.products.map((line) => ({
+                id: `p${line.id}`,
+                type: "product" as const,
+                name: line.product.name,
+                price: line.price,
+                quantity: line.quantity,
+                frais: 0,
+                pack_name: line.pack_name,
+              })),
+            ],
+          };
+        }),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to fetch shift sales", error });
+  }
+};
+
+interface SummaryLine {
+  name: string;
+  quantity: number;
+  price: number;
+  total: number;
+}
+
+/** Groups sale lines by name + unit price, sorted by total */
+const groupLines = (
+  lines: { name: string; price: number; quantity: number }[]
+): SummaryLine[] => {
+  const map = new Map<string, SummaryLine>();
+  lines.forEach((line) => {
+    const key = `${line.name}|${line.price}`;
+    const row =
+      map.get(key) ??
+      map
+        .set(key, { name: line.name, price: line.price, quantity: 0, total: 0 })
+        .get(key)!;
+    row.quantity += line.quantity;
+    row.total = round2(row.total + line.price * line.quantity);
+  });
+  return Array.from(map.values()).sort((a, b) => b.total - a.total);
+};
+
+/**
+ * Simple summary of the user's open shift: totals plus services and
+ * products sold, grouped with their quantity, unit price and total.
+ */
+export const getCurrentShiftDetails = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const sessionUser = req.session.user;
+  if (!sessionUser) {
+    res.status(401).json({ message: "Session expirée" });
+    return;
+  }
+
+  try {
+    const shift = await prisma.shift.findFirst({
+      where: { user_id: sessionUser.id, closed_at: null },
+      include: shiftInclude,
+    });
+    if (!shift) {
+      res.status(404).json({ message: "Aucun shift en cours" });
+      return;
+    }
+
+    const sales = await prisma.sales.findMany({
+      where: { shift_id: shift.id },
+      select: {
+        products: {
+          select: {
+            price: true,
+            quantity: true,
+            pack_name: true,
+            product: { select: { name: true } },
+          },
+        },
+        services: {
+          select: {
+            price: true,
+            quantity: true,
+            pack_name: true,
+            service: { select: { name: true } },
+          },
+        },
+      },
+    });
+
+    const label = (name: string, pack: string | null) =>
+      pack ? `Pack ${pack} — ${name}` : name;
+
+    res.json({
+      data: {
+        shift: await withSummary(shift),
+        services: groupLines(
+          sales.flatMap((sale) =>
+            sale.services.map((line) => ({
+              name: label(line.service.name, line.pack_name),
+              price: line.price,
+              quantity: line.quantity,
+            }))
+          )
+        ),
+        products: groupLines(
+          sales.flatMap((sale) =>
+            sale.products.map((line) => ({
+              name: label(line.product.name, line.pack_name),
+              price: line.price,
+              quantity: line.quantity,
+            }))
+          )
+        ),
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to fetch shift details", error });
+  }
+};

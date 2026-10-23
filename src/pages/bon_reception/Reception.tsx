@@ -8,6 +8,7 @@ import {
   CircleDollarSign,
 } from "lucide-react";
 import api from "@/apis/api";
+import { notifyError } from "@/lib/notify";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
 import { format } from "date-fns";
 import { Local } from "../structure/Products";
@@ -54,7 +55,6 @@ export default function Reception() {
     user?.role === "ADMIN" ? "tous" : `${user?.local.id}`
   );
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [LIEUX_TRAVAIL, setLIEUX_TRAVAILLE] = useState<Local[]>([]);
   const [bons, setbons] = useState<bons[]>([]);
   const [loadingItems, setLoadingItems] = useState<boolean>(false);
@@ -104,11 +104,8 @@ export default function Reception() {
         `/reception/items?id=${showProductsModal}`
       );
       setItems(response.data.data);
-
-      setError(null);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de charger les articles du bon.");
     } finally {
       setLoadingItems(false);
     }
@@ -125,11 +122,9 @@ export default function Reception() {
       setLoading(true);
 
       await api.delete(`/reception/remove/${id}`);
-      setError(null);
       fetchSales();
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de supprimer ce bon de réception.");
     } finally {
       setLoading(false);
     }
@@ -144,10 +139,8 @@ export default function Reception() {
 
       setUsers(response.data);
       setLIEUX_TRAVAILLE(lieux.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de charger les données.");
     } finally {
       setLoading(false);
     }
@@ -164,10 +157,8 @@ export default function Reception() {
       );
 
       setbons(response.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de charger les bons de réception.");
     } finally {
       setLoading(false);
     }
@@ -204,29 +195,14 @@ export default function Reception() {
         handlePrint();
       }, 100);
     } catch (err) {
-      console.error("Error fetching items for print:", err);
-      alert("Failed to load items for printing");
+      notifyError(err, "Impossible de charger les articles à imprimer.");
     } finally {
       setLoadingItems(false);
     }
   };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-          <div className="text-red-500 font-bold mb-4">Erreur</div>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <p className="text-gray-500 text-sm">
-            Utilisation des données de démonstration.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="px-6 space-y-5">
+    <div className="px-4 md:px-6 space-y-5">
       {/* En-tête */}
 
       <Title
@@ -260,7 +236,7 @@ export default function Reception() {
             className="w-full ml-2 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 [&>*]:min-w-0 [&>*]:flex-1 md:flex-nowrap md:[&>*]:flex-none">
           <select
             value={userFilter}
             onChange={(e) => setuserFilter(e.target.value)}
@@ -311,7 +287,7 @@ export default function Reception() {
       {/* Sales table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px]">
+          <table className="mobile-cards w-full md:min-w-[800px]">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -417,7 +393,7 @@ export default function Reception() {
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
+                  <table className="mobile-cards min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">

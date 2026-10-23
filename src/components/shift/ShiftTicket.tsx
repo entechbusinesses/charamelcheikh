@@ -1,8 +1,8 @@
-import { API_BASE_URL } from "@/apis/api";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import type { Shift } from "@/contexts/ShiftContext";
 import { formatDH, formatDuration } from "./utils";
+import SafeImage from "@/components/ui/SafeImage";
 
 /** 88mm ticket of a shift (closing ticket, or current state if still open) */
 export default function ShiftTicket({ shift }: { shift: Shift }) {
@@ -20,12 +20,11 @@ export default function ShiftTicket({ shift }: { shift: Shift }) {
   return (
     <div className="w-[88mm] bg-white p-4 text-sm text-black">
       <div className="mb-4 text-center">
-        {shift.local.logo_url && (
-          <img
-            src={`${API_BASE_URL}${shift.local.logo_url}`}
-            className="mx-auto mb-3 h-20 w-max rounded-md object-contain grayscale contrast-200 filter"
-          />
-        )}
+        <SafeImage
+          path={shift.local.logo_url}
+          className="mx-auto mb-3 h-20 w-max rounded-md object-contain grayscale contrast-200 filter"
+          fallback={null}
+        />
         <p className="text-2xl font-bold">{shift.local.name}</p>
         <p className="underline">
           {shift.closed_at ? "Ticket de clôture" : "Situation (shift en cours)"}{" "}

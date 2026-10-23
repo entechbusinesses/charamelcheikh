@@ -42,6 +42,8 @@ export interface SalesReportFilters {
   paiement: string;
   /** All locals selected: adds the per-local table */
   allLocals?: boolean;
+  /** Short version: products / services with quantity, P.U and total + key totals */
+  simple?: boolean;
 }
 
 // A4 portrait, in mm
@@ -94,7 +96,11 @@ export function buildSalesReportPdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(17, 24, 39);
-  doc.text("Rapport des Ventes", MARGIN, y + 6);
+  doc.text(
+    filters.simple ? "Rapport des Ventes (simplifié)" : "Rapport des Ventes",
+    MARGIN,
+    y + 6
+  );
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   doc.setTextColor(107, 114, 128);
@@ -237,7 +243,7 @@ export function buildSalesReportPdf(
   };
 
   // ---------- Per local (only when all locals are selected) ----------
-  if (filters.allLocals && data.locals?.length) {
+  if (!filters.simple && filters.allLocals && data.locals?.length) {
     const locals = data.locals;
     const sum = (k: "count" | "products" | "services" | "frais" | "cash" | "tpe") =>
       locals.reduce((s, l) => s + l[k], 0);
@@ -277,6 +283,38 @@ export function buildSalesReportPdf(
     );
   }
 
+  // ---------- Services ----------
+  const totalServices = data.services.reduce((s, x) => s + x.total, 0);
+  const totalKessal = data.services.reduce((s, x) => s + x.frais, 0);
+  drawTable(
+    "Services vendus",
+    [
+      { label: "Nom", width: CONTENT_W - 20 - 24 - 30 - 30 - 30 },
+      { label: "Quantité", width: 20, align: "right" },
+      { label: "P.U", width: 24, align: "right" },
+      { label: "Frais Kessal", width: 30, align: "right" },
+      { label: "Total Brut", width: 30, align: "right" },
+      { label: "Total Net", width: 30, align: "right" },
+    ],
+    data.services.map((s) => [
+      s.name,
+      String(s.quantity),
+      (s.total / s.quantity).toFixed(2),
+      money(s.frais),
+      money(s.total),
+      money(s.total - s.frais),
+    ]),
+    "Aucun service vendu",
+    [
+      "Total",
+      String(data.services.reduce((s, x) => s + x.quantity, 0)),
+      "-",
+      money(totalKessal),
+      money(totalServices),
+      money(totalServices - totalKessal),
+    ]
+  );
+
   // ---------- Products ----------
   const totalProduits = data.products.reduce((s, p) => s + p.total, 0);
   drawTable(
@@ -302,41 +340,9 @@ export function buildSalesReportPdf(
     ]
   );
 
-  // ---------- Services ----------
-  const totalServices = data.services.reduce((s, x) => s + x.total, 0);
-  const totalKessal = data.services.reduce((s, x) => s + x.frais, 0);
-  drawTable(
-    "Services vendus",
-    [
-      { label: "Nom", width: CONTENT_W - 20 - 24 - 30 - 30 - 30 },
-      { label: "Quantité", width: 20, align: "right" },
-      { label: "P.U", width: 24, align: "right" },
-      { label: "Frais Kessal", width: 30, align: "right" },
-      { label: "Total Brut", width: 30, align: "right" },
-      { label: "Total Net°", width: 30, align: "right" },
-    ],
-    data.services.map((s) => [
-      s.name,
-      String(s.quantity),
-      (s.total / s.quantity).toFixed(2),
-      money(s.frais),
-      money(s.total),
-      money(s.total - s.frais),
-    ]),
-    "Aucun service vendu",
-    [
-      "Total",
-      String(data.services.reduce((s, x) => s + x.quantity, 0)),
-      "-",
-      money(totalKessal),
-      money(totalServices),
-      money(totalServices - totalKessal),
-    ]
-  );
-
   // ---------- Payment methods ----------
   const payments = data.payments;
-  if (payments) {
+  if (payments && !filters.simple) {
     drawTable(
       "Modes de paiement",
       [
@@ -369,7 +375,22 @@ export function buildSalesReportPdf(
     { label: "", width: CONTENT_W - 50 },
     { label: "", width: 50, align: "right" },
   ];
-  const summary: [string, string][] = [
+  const simpleSummary: [string, string][] = [
+    ...(payments
+      ? ([["Nombre de tickets", String(payments.count)]] as [string, string][])
+      : []),
+    ["Total Services", money(totalServices)],
+    ["Total Produits", money(totalProduits)],
+    ...(payments
+      ? ([
+          ["Encaissé en espèces", money(payments.cash)],
+          ["Encaissé par TPE", money(payments.tpe)],
+        ] as [string, string][])
+      : []),
+    ["Total Brut", money(totalProduits + totalServices)],
+    ["Total Frais Kessal", `- ${money(totalKessal)}`],
+  ];
+  const fullSummary: [string, string][] = [
     ["Total Produits", money(totalProduits)],
     ["Total Services", money(totalServices)],
     ["Chiffre d'affaires brut", money(totalProduits + totalServices)],
@@ -382,6 +403,7 @@ export function buildSalesReportPdf(
       : []),
     ["Total Frais Kessal", `- ${money(totalKessal)}`],
   ];
+  const summary = filters.simple ? simpleSummary : fullSummary;
   ensureSpace(7 + (summary.length + 1) * 8);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);

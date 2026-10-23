@@ -3,11 +3,13 @@ import { LockIcon, PlayIcon, WalletIcon } from "lucide-react";
 import { useShift } from "@/contexts/ShiftContext";
 import { cn } from "@/lib/utils";
 import { formatDH } from "./utils";
+import CurrentShiftSummaryModal from "./CurrentShiftSummaryModal";
 
 /** Navbar: live cash balance of the user's shift, or a button to start one */
 export default function ShiftNavWidget() {
   const { shift, localShift, loading, openStart, openClose } = useShift();
   const [bumped, setBumped] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const lastBalance = useRef<number | null>(null);
 
   // short highlight each time the balance changes (new sale)
@@ -50,11 +52,13 @@ export default function ShiftNavWidget() {
 
   return (
     <div className="flex items-center gap-3">
-      <div
-        className="flex items-center gap-2 text-gray-600"
+      <button
+        type="button"
+        onClick={() => setShowDetails(true)}
+        className="flex items-center gap-2 rounded-lg px-2 py-1 text-left text-gray-600 transition-colors hover:bg-gray-100"
         title={`Fond de caisse ${formatDH(shift.fond_caisse)} + espèces ${formatDH(
           shift.summary.cash,
-        )} — TPE ${formatDH(shift.summary.tpe)}`}
+        )} — TPE ${formatDH(shift.summary.tpe)} · cliquer pour les détails`}
       >
         <div className="flex size-8 items-center justify-center rounded-full bg-green-600">
           <WalletIcon className="size-4 text-white" />
@@ -73,7 +77,11 @@ export default function ShiftNavWidget() {
             {shift.summary.count > 1 ? "s" : ""}
           </div>
         </div>
-      </div>
+      </button>
+      <CurrentShiftSummaryModal
+        open={showDetails}
+        onClose={() => setShowDetails(false)}
+      />
       <button
         onClick={openClose}
         className="flex items-center gap-1.5 rounded-lg bg-red-100 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-200"

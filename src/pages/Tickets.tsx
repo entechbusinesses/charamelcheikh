@@ -11,6 +11,8 @@ import {
   Printer,
   Loader2,
   Download,
+  FileText,
+  ListChecks,
 } from "lucide-react";
 import api from "@/apis/api";
 import { LoadingSpinning } from "@/components/ui/loadingspining";
@@ -26,6 +28,7 @@ import {
 } from "@/lib/payment";
 import { jsPDF } from "jspdf";
 import { buildSalesReportPdf } from "@/lib/salesReportPdf";
+import { notifyError, notifySuccess } from "@/lib/notify";
 interface Local {
   id: number;
   name: string;
@@ -104,7 +107,6 @@ export default function Tickets() {
   const [localFilter, setlocalFilter] = useState<string>("tous");
   const [loading, setLoading] = useState(true);
   const [loadingSales, setLoadingSales] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [LIEUX_TRAVAIL, setLIEUX_TRAVAILLE] = useState<Local[]>([]);
   const [stats, setStats] = useState<stats[]>([]);
   const [products, setProducts] = useState<Prods[]>([]);
@@ -124,6 +126,8 @@ export default function Tickets() {
     }[]
   >([]);
   const [showSalesReportModal, setShowSalesReportModal] = useState(false);
+  // "Voir Rapport" first asks for the simple or the full version
+  const [showReportChoice, setShowReportChoice] = useState(false);
   const [loadingReport, setLoadingReport] = useState(false);
   const reportFrameRef = useRef<HTMLIFrameElement | null>(null);
   const [reportPdf, setReportPdf] = useState<{
@@ -156,11 +160,8 @@ export default function Tickets() {
 
       const response = await api.get(`/sales/items/${showProductsModal}`);
       setItems(response.data.data);
-
-      setError(null);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de charger les articles du ticket.");
     } finally {
       setLoadingItems(false);
     }
@@ -179,10 +180,8 @@ export default function Tickets() {
       );
 
       setProducts(prods.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de charger les produits et services.");
     } finally {
       setLoadingItems(false);
     }
@@ -197,10 +196,8 @@ export default function Tickets() {
 
       setUsers(response.data);
       setLIEUX_TRAVAILLE(lieux.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de charger les utilisateurs et les locaux.");
     } finally {
       setLoading(false);
     }
@@ -224,8 +221,7 @@ export default function Tickets() {
       await fetchSales(true);
       await fetchDataItems(true);
     } catch (error) {
-      console.error("Failed to remove product:", error);
-      setError("Failed to remove product. Please try again later.");
+      notifyError(error, "Impossible d'ajouter cet article.");
     } finally {
       setBusy(null);
       setShowAddProductModal(false);
@@ -253,8 +249,7 @@ export default function Tickets() {
       await fetchDataItems(true);
       await fetchSales(true);
     } catch (error) {
-      console.error("Failed to remove product:", error);
-      setError("Failed to remove product. Please try again later.");
+      notifyError(error, "Impossible de supprimer cet article.");
     } finally {
       setBusy(null);
     }
@@ -287,8 +282,7 @@ export default function Tickets() {
       await fetchDataItems(true);
       await fetchSales(true);
     } catch (error) {
-      console.error("Failed to remove product:", error);
-      setError("Failed to remove product. Please try again later.");
+      notifyError(error, "Impossible de modifier la quantité.");
     } finally {
       setBusy(null);
     }
@@ -299,11 +293,14 @@ export default function Tickets() {
       try {
         setBusy(`delete-${statId}`);
         await api.delete(`/sales/delete/${statId}`);
+        // drop it right away; the refresh below brings totals back in sync
+        setStats((prev) => prev.filter((s) => s.id !== statId));
+        if (showProductsModal === statId) setShowProductsModal(null);
+        notifySuccess(`Ticket #${statId} supprimé.`);
 
         await fetchSales(true);
       } catch (error) {
-        console.error("Failed to delete stat:", error);
-        setError("Failed to delete ticket. Please try again later.");
+        notifyError(error, "Impossible de supprimer ce ticket.");
       } finally {
         setBusy(null);
       }
@@ -325,17 +322,16 @@ export default function Tickets() {
       );
 
       setStats(response.data.data);
-      setError(null);
     } catch (err) {
-      console.error("Error fetching users:", err);
-      setError("Failed to load users. Please try again later.");
+      notifyError(err, "Impossible de charger les tickets.");
     } finally {
       setLoadingSales(false);
     }
   };
 
-  const fetchSalesReportData = async () => {
+  const fetchSalesReportData = async (simple: boolean) => {
     try {
+      setShowReportChoice(false);
       setLoadingReport(true);
       setShowSalesReportModal(true);
       const response = await api.get(
@@ -364,15 +360,19 @@ export default function Tickets() {
             ? "Tous les modes"
             : PAYMENT_INFO[paymentFilter as PaymentMethod].label,
         allLocals: localFilter === "tous",
+        simple,
       });
       setReportPdf({
         doc,
         url: URL.createObjectURL(doc.output("blob")),
-        fileName: `rapport-ventes_${dateFilterFrom}_${dateFilterTo}.pdf`,
+        fileName: `rapport-ventes${
+          simple ? "-simple" : ""
+        }_${dateFilterFrom}_${dateFilterTo}.pdf`,
       });
     } catch (err) {
-      console.error("Error fetching sales report:", err);
-      setError("Failed to load sales report. Please try again later.");
+      // close the empty report modal instead of leaving it spinning
+      setShowSalesReportModal(false);
+      notifyError(err, "Impossible de générer le rapport des ventes.");
     } finally {
       setLoadingReport(false);
     }
@@ -390,22 +390,8 @@ export default function Tickets() {
     return <LoadingSpinning />;
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-6 rounded-lg shadow-md max-w-md">
-          <div className="text-red-500 font-bold mb-4">Erreur</div>
-          <p className="text-gray-700 mb-4">{error}</p>
-          <p className="text-gray-500 text-sm">
-            Utilisation des données de démonstration.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="px-6 space-y-5">
+    <div className="px-4 md:px-6 space-y-5">
       {/* En-tête */}
 
       <Title
@@ -414,7 +400,7 @@ export default function Tickets() {
         description="Modifier Vos Ticket Ou supprimer les!"
         btnText="Voir Rapport"
         btnIcon={BarChart3}
-        onClick={fetchSalesReportData}
+        onClick={() => setShowReportChoice(true)}
         add
       />
 
@@ -607,7 +593,7 @@ export default function Tickets() {
       {/* Sales table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="mobile-cards w-full">
             <thead className="bg-gray-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -749,22 +735,22 @@ export default function Tickets() {
           const footer = (
             <div className="space-y-4">
               {!loadingItems && items.length > 0 && (
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs text-gray-500 uppercase">Total</p>
-                    <p className="text-lg font-bold text-gray-900">
+                <div className="grid grid-cols-3 gap-2 text-center sm:gap-3">
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] text-gray-500 uppercase sm:text-xs">Total</p>
+                    <p className="text-sm font-bold sm:text-lg text-gray-900">
                       {totalBrut.toFixed(2)} DH
                     </p>
                   </div>
-                  <div className="rounded-lg bg-gray-50 p-3">
-                    <p className="text-xs text-gray-500 uppercase">Frais Kessal</p>
-                    <p className="text-lg font-bold text-gray-900">
+                  <div className="rounded-lg bg-gray-50 p-2 sm:p-3">
+                    <p className="text-[10px] text-gray-500 uppercase sm:text-xs">Frais Kessal</p>
+                    <p className="text-sm font-bold sm:text-lg text-gray-900">
                       {totalKessal.toFixed(2)} DH
                     </p>
                   </div>
                   <div className="rounded-lg bg-main/10 p-3">
                     <p className="text-xs text-main uppercase">Total Net°</p>
-                    <p className="text-lg font-bold text-main">
+                    <p className="text-sm font-bold sm:text-lg text-main">
                       {(totalBrut - totalKessal).toFixed(2)} DH
                     </p>
                   </div>
@@ -806,7 +792,7 @@ export default function Tickets() {
                   Aucun produit ou service dans ce ticket.
                 </p>
               ) : (
-                <table className="w-full">
+                <table className="mobile-cards w-full">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className={`${th} text-left rounded-l-lg`}>Nom</th>
@@ -1006,6 +992,47 @@ export default function Tickets() {
           </Modal>
         )}
       </div>
+
+      {showReportChoice && (
+        <Modal
+          onClose={() => setShowReportChoice(false)}
+          title="Rapport des Ventes"
+          description="Choisissez le niveau de détail"
+          size="sm"
+        >
+          <div className="grid gap-3">
+            {[
+              {
+                simple: true,
+                Icon: ListChecks,
+                label: "Simple",
+                text: "Services et produits (quantité, P.U, total) et totaux",
+              },
+              {
+                simple: false,
+                Icon: FileText,
+                label: "Complet",
+                text: "Détail par local, frais Kessal et modes de paiement",
+              },
+            ].map(({ simple, Icon, label, text }) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => fetchSalesReportData(simple)}
+                className="flex items-center gap-3 rounded-lg border border-gray-200 p-4 text-left transition-colors hover:border-main hover:bg-main/5"
+              >
+                <Icon className="size-6 shrink-0 text-main" />
+                <span>
+                  <span className="block font-semibold text-gray-900">
+                    {label}
+                  </span>
+                  <span className="block text-sm text-gray-500">{text}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </Modal>
+      )}
 
       {showSalesReportModal && (
         <Modal
