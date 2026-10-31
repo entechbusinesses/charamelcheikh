@@ -4,6 +4,11 @@ import { cn } from "@/lib/utils";
 /**
  * One line of text. When it is wider than its box it scrolls in a loop so the
  * whole text can be read; otherwise it is shown as is.
+ *
+ * Scrolling must not change the box's intrinsic width: in an auto-width
+ * parent (POS categories panel) a wider box made the text fit, which stopped
+ * the scrolling, which narrowed the box again: the panel shook. So the copy
+ * is out of flow and the text span keeps the same size in both states.
  */
 export default function MarqueeText({
   text,
@@ -34,7 +39,7 @@ export default function MarqueeText({
       title={text}
     >
       <span
-        className={cn("inline-block", overflow && "marquee-track")}
+        className={cn("relative inline-block", overflow && "marquee-track")}
         // ~1s per 6 characters, so long names don't fly by
         style={
           overflow
@@ -42,12 +47,12 @@ export default function MarqueeText({
             : undefined
         }
       >
-        {/* same right gap on both copies, so -50% lands exactly on the 2nd */}
-        <span ref={textRef} className={cn("inline-block", overflow && "pr-8")}>
+        <span ref={textRef} className="inline-block">
           {text}
         </span>
+        {/* 2rem after the text; the track moves by its width + 2rem (index.css) */}
         {overflow && (
-          <span className="inline-block pr-8" aria-hidden>
+          <span className="absolute left-full top-0 pl-8" aria-hidden>
             {text}
           </span>
         )}

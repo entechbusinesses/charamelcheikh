@@ -206,6 +206,12 @@ body {
   overflow-x: hidden;
 }
 
+/* Space for the page scrollbar is always kept, so the layout width doesn't
+   change when a page starts or stops scrolling (no layout flip-flop) */
+html {
+  scrollbar-gutter: stable;
+}
+
 /*
  * Tables with "mobile-cards" turn into one card per row on phones.
  * Each cell gets its column name from data-label (set by TableCardLabels).
@@ -288,7 +294,8 @@ body {
 }
 @keyframes marquee {
   0%, 12% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  /* track = one copy of the text, the 2nd copy starts 2rem after it */
+  100% { transform: translateX(calc(-100% - 2rem)); }
 }
 @media (prefers-reduced-motion: reduce) {
   .marquee-track { animation: none; }

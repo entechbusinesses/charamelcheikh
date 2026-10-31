@@ -514,7 +514,7 @@ export default function Pos() {
   ];
 
   return (
-    <main className="flex flex-col md:flex-row rounded-lg fixed top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-auto pt-3 md:pt-24 md:h-[95%] left-0 px-3 md:px-5 w-screen gap-3 md:gap-4">
+    <main className="flex flex-col md:flex-row rounded-lg fixed top-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] md:bottom-auto pt-3 md:pt-24 md:h-[95%] inset-x-0 px-3 md:px-5 gap-3 md:gap-4">
       {/* Categories: chips on phone */}
       <nav className="md:hidden flex shrink-0 items-center gap-2 overflow-x-auto -mx-3 px-3 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {mobileGroups.map((group) => (
@@ -549,8 +549,9 @@ export default function Pos() {
         )}
       </nav>
 
-      {/* Categories Side */}
-      <div className="hidden md:flex border-r rounded-l-lg border min-w-[12vw] h-full overflow-hidden flex-col bg-white shadow-sm">
+      {/* Categories Side: fixed width, never sized from its content (category
+          names scroll), otherwise the panel can resize itself in a loop */}
+      <div className="hidden md:flex md:flex-none md:w-[max(12vw,14rem)] lg:w-[max(12vw,18rem)] border-r rounded-l-lg border h-full overflow-hidden flex-col bg-white shadow-sm">
         <div className="px-4 py-4 bg-gray-50">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-2xl font-semibold">
@@ -576,7 +577,7 @@ export default function Pos() {
           <hr className="border my-3" />
         </div>
 
-        <section className="flex overflow-auto px-4 pt-4 h-full flex-col gap-4 pb-4">
+        <section className="flex overflow-auto [scrollbar-gutter:stable] px-4 pt-4 h-full flex-col gap-4 pb-4">
           <div
             className={cn(
               "flex gap-4",
